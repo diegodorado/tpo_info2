@@ -1,10 +1,9 @@
 #include "sysinit.h"
-#include "core/periph/periph.h"
-#include "core/lcd/lcd.h"
-#include "core/gpio/gpio.h"
-#include "core/systick/systick.h"
-#include "core/dac/dac.h"
-#include "drivers/7seg.h"
+#include "../core/periph/periph.h"
+#include "../core/lcd/lcd.h"
+#include "../core/gpio/gpio.h"
+#include "../core/systick/systick.h"
+#include "../core/dac/dac.h"
 
 
 

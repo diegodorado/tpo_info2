@@ -1,8 +1,8 @@
 #ifndef OSCILATOR_H
 #define OSCILATOR_H
 
-#include "sysdefs.h"
-#include "core/lpc_1769.h"
+#include "../../sysdefs.h"
+#include "../lpc_1769.h"
 
 //////////////Registros del CLOCK y de sistema/////////////////
 //0x400FC1A0UL: Registro de control de sistema y registro de status:

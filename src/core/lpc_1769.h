@@ -6,7 +6,7 @@ RegsLPC1769
 #ifndef REGS_H_
 #define REGS_H_
 
-#include "sysdefs.h"
+#include "../sysdefs.h"
 
 
 // REGISTROS ------------------------------------------------------------------------------------------------------------------------

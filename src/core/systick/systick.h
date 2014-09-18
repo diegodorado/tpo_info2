@@ -1,5 +1,5 @@
-#include "sysdefs.h"
-#include "core/lpc_1769.h"
+#include "../../sysdefs.h"
+#include "../lpc_1769.h"
 
 typedef struct
 {

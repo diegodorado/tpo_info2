@@ -1,8 +1,8 @@
 #ifndef DAC_H
 #define DAC_H
 
-#include "sysdefs.h"
-#include "core/periph/periph.h"
+#include "../../sysdefs.h"
+#include "../periph/periph.h"
 
 #define LOW 0
 #define HIGH 1

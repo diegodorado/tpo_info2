@@ -1,8 +1,8 @@
 #ifndef LCD_H
 #define LCD_H
 
-#include "sysdefs.h"
-#include "core/gpio/gpio.h"
+#include "../../sysdefs.h"
+#include "../gpio/gpio.h"
 
 #define LOW 0
 #define HIGH 1
