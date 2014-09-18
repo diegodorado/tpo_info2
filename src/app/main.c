@@ -14,6 +14,6 @@ int main(void)
 	//este while indica que el programa no debe terminar nunca
 	while(1){};
 
-	//esta devolucion es para satisfacer al compilador aunque nunca suceda
+	//esta devolucion es para satisfacer al compilador, aunque nunca suceda
 	return 1;
 }
