@@ -1,5 +1,10 @@
 #include "lcd.h"
 
+void lcd_setup(void){
+  //todo: implementar la inicializacion
+}
+
+
 
 
 
@@ -73,8 +78,8 @@ void lcd_begin(uint8_t cols, uint8_t lines, uint8_t dotsize) {
   // before sending commands. Arduino can turn on way befer 4.5V so we'll wait 50
   delayMicroseconds(50000);
   // Now we pull both RS and R/W low to begin commands
-  SetPIN(LCD_PINRS, LOW);
-  SetPIN(LCD_PINE, LOW);
+  gpio_set_pin(LCD_PINRS, LOW);
+  gpio_set_pin(LCD_PINE, LOW);
 
   // we start in 8bit mode, try to set 4 bit mode
   lcd_write4bits(0x03);
@@ -145,26 +150,26 @@ void lcd_write(uint8_t value) {
 
 // write either command or data, with automatic 4/8-bit selection
 void lcd_send(uint8_t value, uint8_t mode) {
-  SetPIN(LCD_PINRS, mode);
+  gpio_set_pin(LCD_PINRS, mode);
   lcd_write4bits(value>>4);
   lcd_write4bits(value);
 }
 
 void lcd_pulseEnable(void) {
-  SetPIN(LCD_PINE, LOW);
+  gpio_set_pin(LCD_PINE, LOW);
   delayMicroseconds(1);
-  SetPIN(LCD_PINE, HIGH);
+  gpio_set_pin(LCD_PINE, HIGH);
   delayMicroseconds(1);    // enable pulse must be >450ns
-  SetPIN(LCD_PINE, LOW);
+  gpio_set_pin(LCD_PINE, LOW);
   delayMicroseconds(100);   // commands need > 37us to settle
 }
 
 void lcd_write4bits(uint8_t value) {
 
-  SetPIN(LCD_PIND4, (value >> 0) & 0x01);
-  SetPIN(LCD_PIND5, (value >> 1) & 0x01);
-  SetPIN(LCD_PIND6, (value >> 2) & 0x01);
-  SetPIN(LCD_PIND7, (value >> 3) & 0x01);
+  gpio_set_pin(LCD_PIND4, (value >> 0) & 0x01);
+  gpio_set_pin(LCD_PIND5, (value >> 1) & 0x01);
+  gpio_set_pin(LCD_PIND6, (value >> 2) & 0x01);
+  gpio_set_pin(LCD_PIND7, (value >> 3) & 0x01);
 
   lcd_pulseEnable();
 }

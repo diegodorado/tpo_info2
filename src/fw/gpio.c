@@ -28,7 +28,7 @@ void SetDIR( uint8_t puerto , uint8_t pin , uint8_t dir )
  	\param [in] estado:	valor a establecer en el PIN del PUERTO [0-1].
 	\return void
 */
-void SetPIN( uint8_t puerto , uint8_t pin , uint8_t estado )
+void gpio_set_pin( uint8_t puerto , uint8_t pin , uint8_t estado )
 {
 	puerto = puerto * 8 + 5;
 
@@ -47,7 +47,7 @@ void SetPIN( uint8_t puerto , uint8_t pin , uint8_t estado )
 	\param [in] actividad:	ALTO = 1, BAJO = 0
 	\return:	estado del pin consultado (uint_8)
 */
-uint8_t GetPIN( uint8_t puerto , uint8_t pin , uint8_t actividad )
+uint8_t gpio_get_pin( uint8_t puerto , uint8_t pin , uint8_t actividad )
 {
 	puerto = puerto * 8 + 5;
 

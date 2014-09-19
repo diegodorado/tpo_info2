@@ -1,9 +1,9 @@
 #include "sysinit.h"
-#include "../core/periph/periph.h"
-#include "../core/lcd/lcd.h"
-#include "../core/gpio/gpio.h"
-#include "../core/systick/systick.h"
-#include "../core/dac/dac.h"
+#include "../fw/periph.h"
+#include "../drivers/lcd.h"
+#include "../fw/gpio.h"
+#include "../fw/systick.h"
+#include "../fw/dac.h"
 
 
 
@@ -49,7 +49,7 @@ void InitGPIOs ( void )
 	for(i=0;i<8;i++){
 		SetPINSEL( 2 , i , 0 );
 		SetDIR( 2 , i , 1 );
-		SetPIN(2,i,0);
+		gpio_set_pin(2,i,0);
 	}
 
 

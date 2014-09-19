@@ -8,15 +8,13 @@
 
 void setup(void){
   //todo: implementar la inicializacion del equipo (cada llamada a funcion)
-
-  setup_pll(); // inicializar PLL
+  micro_setup(); // inicializar micro (PLL)
   // LCD es inmediato para mostrar posibles errores
-  setup_lcd(); // inicializar LCD
-
-  setup_dac(); // inicializar DAC
-  setup_kb(); //inicializar Teclado
-  setup_sd(); //inicializar tarjeta SD
-  setup_uart(); // inicializar puerto serie
+  lcd_setup(); // inicializar LCD
+  audio_setup(); // inicializar AUDIO (DAC/DMA)
+  keyboard_setup(); //inicializar Teclado
+  storage_setup(); //inicializar almacenamiento (tarjeta SD)
+  client_setup(); // inicializar cliente remoto (UART)
 
 }
 

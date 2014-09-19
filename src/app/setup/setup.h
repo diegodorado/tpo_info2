@@ -11,12 +11,7 @@
 
 // include sub setups
 
-#include "setup_dac.h"
-#include "setup_kb.h"
-#include "setup_lcd.h"
-#include "setup_pll.h"
-#include "setup_sd.h"
-#include "setup_uart.h"
+#include "drivers.h"
 
 void setup(void);
 

@@ -34,6 +34,9 @@
 								</option>
 								<option id="gnu.c.compiler.option.misc.other.1077014305" name="Other flags" superClass="gnu.c.compiler.option.misc.other" value="-c -fmessage-length=0 -fno-builtin -ffunction-sections -fdata-sections" valueType="string"/>
 								<option id="com.crt.advproject.gcc.exe.debug.option.optimization.level.33293917" name="Optimization Level" superClass="com.crt.advproject.gcc.exe.debug.option.optimization.level"/>
+								<option id="gnu.c.compiler.option.include.paths.1980719772" name="Include paths (-I)" superClass="gnu.c.compiler.option.include.paths" valueType="includePath">
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/src/inc}&quot;"/>
+								</option>
 								<inputType id="com.crt.advproject.compiler.input.370100715" superClass="com.crt.advproject.compiler.input"/>
 							</tool>
 							<tool id="com.crt.advproject.gas.exe.debug.324286007" name="MCU Assembler" superClass="com.crt.advproject.gas.exe.debug">

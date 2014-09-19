@@ -1,8 +1,8 @@
 #ifndef DAC_H
 #define DAC_H
 
-#include "../../sysdefs.h"
-#include "../periph/periph.h"
+#include "sysdefs.h"
+#include "periph.h"
 
 #define LOW 0
 #define HIGH 1
@@ -10,11 +10,6 @@
 
 #define DAC_PIN  0,26
 #define DAC_FUNC  2
-
-
-
-
-
 
 
 /*Table 538. DAC registers*/
@@ -51,22 +46,8 @@ typedef struct
 #define dac ((dac_t *) 0x4008C000UL)
 
 
-
-
-
-
-
-
-
-
-
 void dac_init(void);
 void dac_set_value(uint32_t);
-
-void dac_run(void);
-
-
-
 
 
 #endif /* DAC_H */
