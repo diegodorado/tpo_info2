@@ -12,23 +12,28 @@
 void keyboard_setup(void){
   //todo: implementar la inicializacion
 
+  // Configuro el SW1 para que trabaje como EINT0
+  // Esto debe hacerse con la interrupcion deshabilitada
+  set_pin_sel(EINT0_PIN, 1);
+  // Configuro la interrupcion externa 0 por flanco
+  EXTMODE0_F;
+  // Habilito Interrupcion Externa 0
+  ISE_EINT0;
 
-  // EINT0
-  set_pin_sel(EINT0_PIN, 1); // Configuro el P2[10] SW1 para que trabaje como EINT0 esto debe hacerse con
-                                       // la Interr deshabilitada Pag 25
-   EXTMODE0_F;                         // Configuro la interrupcion externa 0 por flanco
-                                          //EXTPOLAR0_P; // si quiero por flanco positivo debo cambiarlo en EXTPOLAR
-   ISE_EINT0;                        // Habilito Interrupcion Externa 0
 
+  // Configuro el SW4 para que trabaje como EINT3
+  // Esto debe hacerse con la interrupcion deshabilitada
+  set_pin_sel(EINT3_PIN, 1);
+  // Configuro la interrupcion externa 0 por flanco
+  EXTMODE0_F;
+  // Habilito Interrupcion Externa 0
+  ISE_EINT3;
 
 }
 
 void keyboard_handle_key(uint8_t key){
-  if(fsm_main_state == FSM_MAIN_STATE_IDLE){
+  if(key == 1)
     fsm_main_state = FSM_MAIN_STATE_PLAYBACK;
-  }else if(fsm_main_state == FSM_MAIN_STATE_PLAYBACK){
+  else if(key == 4)
     fsm_main_state = FSM_MAIN_STATE_WRITE;
-  }else if(fsm_main_state == FSM_MAIN_STATE_WRITE){
-    fsm_main_state = FSM_MAIN_STATE_IDLE;
-  }
 }

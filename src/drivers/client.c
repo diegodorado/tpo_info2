@@ -10,4 +10,5 @@
 
 void client_setup(void){
   //todo: implementar la inicializacion
+  uart1_setup();
 }

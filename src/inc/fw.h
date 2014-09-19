@@ -13,6 +13,7 @@
 #include "../fw/clock.h"
 #include "../fw/dac.h"
 #include "../fw/periph.h"
+#include "../fw/uart.h"
 #include "sysdefs.h" //necesario??
 
 #endif /* FW_H_ */

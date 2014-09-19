@@ -16,7 +16,14 @@
 #include "drivers.h"
 
 
-typedef enum { FSM_MAIN_STATE_IDLE, FSM_MAIN_STATE_PLAYBACK, FSM_MAIN_STATE_WRITE } fsm_main_state_t;
+typedef enum {
+  FSM_MAIN_STATE_IDLE,
+  FSM_MAIN_STATE_IDLE_UPDATE,
+  FSM_MAIN_STATE_PLAYBACK,
+  FSM_MAIN_STATE_PLAYBACK_UPDATE,
+  FSM_MAIN_STATE_WRITE,
+  FSM_MAIN_STATE_WRITE_UPDATE
+} fsm_main_state_t;
 
 extern fsm_main_state_t fsm_main_state;
 
@@ -24,8 +31,11 @@ void fsm_main(void);
 
 
 void fsm_main_idle( void);
+void fsm_main_idle_update( void);
 void fsm_main_playback( void);
+void fsm_main_playback_update( void);
 void fsm_main_write( void);
+void fsm_main_write_update( void);
 
 
 

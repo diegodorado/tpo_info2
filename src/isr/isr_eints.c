@@ -11,7 +11,8 @@
 void EINT0_IRQHandler(void){
   //todo: implementar interrupcion
 
-  CLR_EINT0;     // borro el flag EINT0 del registro EXTINT
+  // borro el flag EINT0 del registro EXTINT
+  CLR_EINT0;
   keyboard_handle_key(1);
 
 
@@ -30,8 +31,8 @@ void EINT2_IRQHandler(void){
 }
 
 void EINT3_IRQHandler(void){
-  //todo: implementar interrupcion
-  while(1);
-
+  // borro el flag EINT3 del registro EXTINT
+  CLR_EINT3;
+  keyboard_handle_key(4);
 }
 
