@@ -10,8 +10,8 @@ void lcd_setup(void);
 #include "sysdefs.h"
 #include "../fw/gpio.h"
 
-#define LOW 0
-#define HIGH 1
+#define LCD_LOW 0
+#define LCD_HIGH 1
 
 #define LCD_PIND4  0,5
 #define LCD_PIND5  0,10
@@ -61,18 +61,14 @@ void lcd_setup(void);
 void lcd_init(void);
 void lcd_begin(uint8_t, uint8_t, uint8_t);
 void lcd_clear(void);
-void lcd_setCursor(uint8_t, uint8_t);
+void lcd_set_cursor(uint8_t, uint8_t);
 void lcd_display(void);
 void lcd_command(uint8_t);
 void lcd_write(uint8_t);
 void lcd_send(uint8_t, uint8_t);
-void lcd_pulseEnable(void);
-void lcd_write4bits(uint8_t);
+void lcd_pulse_enable(void);
+void lcd_write_4_bits(uint8_t);
 void lcd_print(char *);
-void run_lcd(void);
-
-
-
-
+void lcd_test(void);
 
 #endif /* LCD_H */

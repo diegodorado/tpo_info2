@@ -2,6 +2,7 @@
 
 void lcd_setup(void){
   //todo: implementar la inicializacion
+  lcd_init();
 }
 
 
@@ -78,23 +79,23 @@ void lcd_begin(uint8_t cols, uint8_t lines, uint8_t dotsize) {
   // before sending commands. Arduino can turn on way befer 4.5V so we'll wait 50
   delayMicroseconds(50000);
   // Now we pull both RS and R/W low to begin commands
-  gpio_set_pin(LCD_PINRS, LOW);
-  gpio_set_pin(LCD_PINE, LOW);
+  gpio_set_pin(LCD_PINRS, LCD_LOW);
+  gpio_set_pin(LCD_PINE, LCD_LOW);
 
   // we start in 8bit mode, try to set 4 bit mode
-  lcd_write4bits(0x03);
+  lcd_write_4_bits(0x03);
   delayMicroseconds(4500); // wait min 4.1ms
 
   // second try
-  lcd_write4bits(0x03);
+  lcd_write_4_bits(0x03);
   delayMicroseconds(4500); // wait min 4.1ms
 
   // third go!
-  lcd_write4bits(0x03);
+  lcd_write_4_bits(0x03);
   delayMicroseconds(150);
 
   // finally, set to 8-bit interface
-  lcd_write4bits(0x02);
+  lcd_write_4_bits(0x02);
 
   // finally, set # lines, font size, etc.
   lcd_command(LCD_FUNCTIONSET | _displayfunction);
@@ -120,7 +121,7 @@ void lcd_clear()
   delayMicroseconds(2000);  // this command takes a long time!
 }
 
-void lcd_setCursor(uint8_t col, uint8_t row)
+void lcd_set_cursor(uint8_t col, uint8_t row)
 {
   int row_offsets[] = { 0x00, 0x40, 0x14, 0x54 };
   if ( row > _numlines ) {
@@ -139,11 +140,11 @@ void lcd_display() {
 /*********** mid level commands, for sending data/cmds */
 
 void lcd_command(uint8_t value) {
-  lcd_send(value, LOW);
+  lcd_send(value, LCD_LOW);
 }
 
 void lcd_write(uint8_t value) {
-  lcd_send(value, HIGH);
+  lcd_send(value, LCD_HIGH);
 }
 
 /************ low level data pushing commands **********/
@@ -151,27 +152,27 @@ void lcd_write(uint8_t value) {
 // write either command or data, with automatic 4/8-bit selection
 void lcd_send(uint8_t value, uint8_t mode) {
   gpio_set_pin(LCD_PINRS, mode);
-  lcd_write4bits(value>>4);
-  lcd_write4bits(value);
+  lcd_write_4_bits(value>>4);
+  lcd_write_4_bits(value);
 }
 
-void lcd_pulseEnable(void) {
-  gpio_set_pin(LCD_PINE, LOW);
+void lcd_pulse_enable(void) {
+  gpio_set_pin(LCD_PINE, LCD_LOW);
   delayMicroseconds(1);
-  gpio_set_pin(LCD_PINE, HIGH);
+  gpio_set_pin(LCD_PINE, LCD_HIGH);
   delayMicroseconds(1);    // enable pulse must be >450ns
-  gpio_set_pin(LCD_PINE, LOW);
+  gpio_set_pin(LCD_PINE, LCD_LOW);
   delayMicroseconds(100);   // commands need > 37us to settle
 }
 
-void lcd_write4bits(uint8_t value) {
+void lcd_write_4_bits(uint8_t value) {
 
   gpio_set_pin(LCD_PIND4, (value >> 0) & 0x01);
   gpio_set_pin(LCD_PIND5, (value >> 1) & 0x01);
   gpio_set_pin(LCD_PIND6, (value >> 2) & 0x01);
   gpio_set_pin(LCD_PIND7, (value >> 3) & 0x01);
 
-  lcd_pulseEnable();
+  lcd_pulse_enable();
 }
 
 
@@ -183,11 +184,11 @@ void lcd_print(char *str) {
 }
 
 
-
-
-void run_lcd(){
-	lcd_init();
-	lcd_print("hello, world!");
-	lcd_setCursor(0, 1);
-	lcd_print("and EVA!");
+void lcd_test(){
+ lcd_init();
+ lcd_print("hello, world!");
+ lcd_set_cursor(0, 1);
+ lcd_print("goodbye!");
 }
+
+

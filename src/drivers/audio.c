@@ -20,11 +20,9 @@ void audio_setup(void){
 }
 
 void audio_test(void){
- while(1){
-  //onda cuadrada??
-   audio_delay(1);
-   dac_set_value(1);
-   audio_delay(1);
-   dac_set_value(0);
- }
+//onda cuadrada??
+ audio_delay(1);
+ dac_set_value(1);
+ audio_delay(1);
+ dac_set_value(0);
 }

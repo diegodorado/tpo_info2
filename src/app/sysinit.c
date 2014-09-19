@@ -1,60 +1,5 @@
-#include "sysinit.h"
-#include "../fw/periph.h"
-#include "../drivers/lcd.h"
-#include "../fw/gpio.h"
-#include "../fw/systick.h"
-#include "../fw/dac.h"
+#include "fw.h"
 
-
-
-
-
-/********************************************************************************
-	\fn  void Inicializar ( void )
-	\brief Inicializacion de Hardware.
-	\author & date: Informática II
- 	\param void
-	\return:	void
-*/
-void Inicializar ( void )
-{
-	//InitPLL ( ) ;
-	//InitGPIOs ( ) ;
-	//InitSystick();
-	//Inicializar_Timer( ) ;
-	//dac_run();
-	run_lcd();
-
-}
-
-
-
-/********************************************************************************
-	\fn  void InitGPIOs ( void )
-	\brief Inicialización de GPIO.
-	\author & date: Informática II
- 	\param void
-	\return:	void
-*/
-void InitGPIOs ( void )
-{
-	SetPINSEL( 0 , 22 , 0 ); 	// puerto = 0 , pin =  22 ; seleccion = GPIO
-	SetDIR( 0 , 22 , 1 ); 		// puerto = 0 , pin =  22 ; Direccion = SALIDA
-
-	SetPINSEL( 2 , 8 , 0 );
-	SetDIR( 2 , 8 , 0 );
-
-
-	int i;
-	for(i=0;i<8;i++){
-		SetPINSEL( 2 , i , 0 );
-		SetDIR( 2 , i , 1 );
-		gpio_set_pin(2,i,0);
-	}
-
-
-
-}
 
 /********************************************************************************
 	\fn  void Inicializar_Timer(void)
@@ -89,7 +34,7 @@ void Inicializar_Timer(void)
 }
 
 
-
+/*
 void InitSystick(void)
 {
 	systick->RELOAD = 40; //systick->CALIB / 4;
@@ -98,3 +43,4 @@ void InitSystick(void)
 	systick->TICKINT = 1;
 	systick->CLKSOURCE = 1;
 }
+*/

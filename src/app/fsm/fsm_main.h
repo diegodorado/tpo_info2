@@ -12,6 +12,10 @@
 #include "fsm_playback.h"
 #include "fsm_write.h"
 
+//include drivers
+#include "drivers.h"
+
+
 typedef enum { FSM_MAIN_STATE_IDLE, FSM_MAIN_STATE_PLAYBACK, FSM_MAIN_STATE_WRITE } fsm_main_state_t;
 
 extern fsm_main_state_t fsm_main_state;

@@ -29,6 +29,10 @@ void fsm_main(void)
 void fsm_main_idle( void)
 {
   // estado de reposo...
+  // se puede usar este estado para tests
+  audio_test();
+  lcd_test();
+
 }
 
 // NOTA:
