@@ -1,9 +1,10 @@
-#include "sysinit.h"
+#include "setup.h"
 #include "fsm/fsm_main.h"
 
 int main(void)
 {
-	Inicializar ( ) ;
+  //inicializacion del equipo
+  setup();
 
 	//pasa el control del ciclo a la
 	//maquina de estados principal
