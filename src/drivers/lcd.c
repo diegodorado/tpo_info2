@@ -56,12 +56,12 @@ uint8_t _numlines,_currline;
 
 void lcd_init(void)
 {
-	SetDIR(LCD_PIND4, 1);
-	SetDIR(LCD_PIND5, 1);
-	SetDIR(LCD_PIND6, 1);
-	SetDIR(LCD_PIND7, 1);
-	SetDIR(LCD_PINRS, 1);
-	SetDIR(LCD_PINE, 1);
+	gpio_set_dir(LCD_PIND4, 1);
+	gpio_set_dir(LCD_PIND5, 1);
+	gpio_set_dir(LCD_PIND6, 1);
+	gpio_set_dir(LCD_PIND7, 1);
+	gpio_set_dir(LCD_PINRS, 1);
+	gpio_set_dir(LCD_PINE, 1);
   _displayfunction = LCD_4BITMODE | LCD_1LINE | LCD_5x8DOTS;
   lcd_begin(16, 2, LCD_5x8DOTS);
 }
@@ -182,13 +182,4 @@ void lcd_print(char *str) {
   while (*str)
     lcd_write(*str++);
 }
-
-
-void lcd_test(){
- lcd_init();
- lcd_print("hello, world!");
- lcd_set_cursor(0, 1);
- lcd_print("goodbye!");
-}
-
 

@@ -1,7 +1,7 @@
 #include "dac.h"
 
 void dac_init(void){
-	SetPINSEL(DAC_PIN, DAC_FUNC);
+	set_pin_sel(DAC_PIN, DAC_FUNC);
 	dac->BIAS = 0;
 }
 

@@ -1,14 +1,13 @@
-#ifndef LCD_H
-#define LCD_H
+#ifndef LCD_H_
+#define LCD_H_
 
 //include firmware
 #include "fw.h"
+#include "sysdefs.h"
 
 void lcd_setup(void);
 
 
-#include "sysdefs.h"
-#include "../fw/gpio.h"
 
 #define LCD_LOW 0
 #define LCD_HIGH 1
@@ -69,6 +68,5 @@ void lcd_send(uint8_t, uint8_t);
 void lcd_pulse_enable(void);
 void lcd_write_4_bits(uint8_t);
 void lcd_print(char *);
-void lcd_test(void);
 
-#endif /* LCD_H */
+#endif /* LCD_H_ */

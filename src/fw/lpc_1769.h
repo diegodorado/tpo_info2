@@ -16,6 +16,36 @@ RegsLPC1769
 #define		SYSTICK			( ( registro_t  * ) 0xE000E010UL )		//!< Direccion de inicio de los registros de SYSTICK
 
 
+
+
+
+typedef struct
+{
+ union
+ {
+  __RW uint32_t CTRL;
+  struct
+  {
+   __RW uint32_t ENABLE:1;
+   __RW uint32_t TICKINT:1;
+   __RW uint32_t CLKSOURCE:1;
+   __RW uint32_t RESERVED0:14;
+   __RW uint32_t COUNTFLAG:1;
+   __RW uint32_t RESERVED1:14;
+  };
+ };
+ __RW uint32_t RELOAD;
+ __RW uint32_t CURR;
+ __R uint32_t CALIB;
+} systick_t;
+
+
+#define systick ((systick_t *) SYSTICK)
+
+
+
+
+
 #define		TIMER0			( ( registro_t  * ) 0x40004000UL )
 
 #define		T0IR			TIMER0[ 0 ]			/** IR - INTERRUPT REGISTER */
@@ -71,6 +101,12 @@ RegsLPC1769
 #define		ISER0		ISER[0]
 #define		ISER1		ISER[1]
 
+#define  ISE_EINT3 ISER[0] |= (0x00000001 << 21)  //ISER0->bit21 pongo un 1 en el bit 21 para habilitar la INT EINT3
+#define  ISE_EINT2 ISER[0] |= (0x00000001 << 20)  //ISER0->bit20 pongo un 1 en el bit 20 para habilitar la INT EINT2
+#define  ISE_EINT1 ISER[0] |= (0x00000001 << 19)  //ISER0->bit19 pongo un 1 en el bit 19 para habilitar la INT EINT1
+#define  ISE_EINT0 ISER[0] |= (0x00000001 << 18)  //ISER0->bit18 pongo un 1 en el bit 18 para habilitar la INT EINT0
+
+
 // Registros ICER:
 #define		ICER0		ICER[0]
 #define		ICER1		ICER[1]
@@ -86,4 +122,71 @@ RegsLPC1769
 #define		PCLKSEL0	PCLKSEL[0]
 #define		PCLKSEL1	PCLKSEL[1]
 
-#endif
+
+
+
+
+
+/**
+ * Inicio de Interrumpciones Externas
+ */
+//!<Registro EXTMODE : Para seleccionar si la ISR Externa activa por flanco ó nivel
+#define  EXTMODE   ( (uint32_t  * ) 0x400FC148UL )
+
+
+#define  EXTMODE3_F  EXTMODE[0] |= 0x00000001 << 3  // EINT3 por flanco
+#define  EXTMODE2_F  EXTMODE[0] |= 0x00000001 << 2  // EINT2 por flanco
+#define  EXTMODE1_F  EXTMODE[0] |= 0x00000001 << 1  // EINT1 por flanco
+#define  EXTMODE0_F  EXTMODE[0] |= 0x00000001       // EINT0 por flanco
+
+//!<Registro EXTPOLAR : selecciona Polaridad del EXTMODE
+#define    EXTPOLAR        ( (uint32_t  * ) 0x400FC14C )
+#define    EXTPOLAR3_P      EXTPOLAR[0] |= 0X00000001 << 3 // Flanco ó Nivel Positivo
+#define    EXTPOLAR2_P      EXTPOLAR[0] |= 0X00000001 << 2 // Flanco ó Nivel Positivo
+#define    EXTPOLAR1_P      EXTPOLAR[0] |= 0X00000001 << 1 // Flanco ó Nivel Positivo
+#define    EXTPOLAR0_P      EXTPOLAR[0] |= 0X00000001      // Flanco ó Nivel Positivo
+
+//!<Registros ICER: Para deshabilitar las Interupciones Se desactivan con 1 Escribiendo un 0 no hace nada
+#define  ICER0  ICER[0]
+#define  ICER1  ICER[1]
+#define  ICE_EINT3 ICER0 |= (0x00000001 << 21) // deshabilito a EINT3
+#define  ICE_EINT2 ICER0 |= (0x00000001 << 20) // deshabilito a EINT2
+#define  ICE_EINT1 ICER0 |= (0x00000001 << 19) // deshabilito a EINT1
+#define  ICE_EINT0 ICER0 |= (0x00000001 << 18) // deshabilito a EINT0
+
+//!<Registro EXINT: Registro de Flags para limpiar la ISR
+#define  EXTINT   ( (uint32_t  * ) 0x400FC140UL )
+
+
+//!<_____________________________________ Macros ISR _____________________________________
+#define  CLR_EINT3  EXTINT[0] |= 0x00000001 << 3 // bajo el flag de EINT3
+#define  CLR_EINT2  EXTINT[0] |= 0x00000001 << 2 // bajo el flag de EINT2
+#define  CLR_EINT1  EXTINT[0] |= 0x00000001 << 1 // bajo el flag de EINT1
+#define  CLR_EINT0  EXTINT[0] |= 0x00000001      // bajo el flag de EINT0
+
+
+//!<_____________________________________ Registros de GPIO para usarse como ISR _____________________________________
+//!< Configuración
+#define      IO0IntEnR  ( (uint32_t  * ) 0x40028090UL ) // Puerto 0 como flanco ascendente
+#define      IO2IntEnR  ( (uint32_t  * ) 0x400280B0UL )//  Puerto 2 como flanco ascendente
+#define      IO0IntEnF  ( (uint32_t  * ) 0x40028094UL )// Puerto 0 como flanco descendente
+#define      IO2IntEnF  ( (uint32_t  * ) 0x400280B4UL )// Puerto 0 como flanco ascendente
+
+//!< Estado
+#define     IO0IntStatR  ( (uint32_t  * ) 0x40028084UL ) //Estado de los flags de interr flanco ascendente bits Puerto 0
+#define     IO2IntStatR  ( (uint32_t  * ) 0x400280A4UL ) //Estado de los flags de interr flanco ascendente bits Puerto 2
+#define     IO0IntStatF  ( (uint32_t  * ) 0x40028088UL ) //Estado de los flags de interr flanco descendente bits Puerto 0
+#define     IO2IntStatF  ( (uint32_t  * ) 0x400280A8UL ) //Estado de los flags de interr flanco descendente bits Puerto 2
+#define     IOIntStatus  ( (uint32_t  * ) 0x40028080UL ) //Estado de los flags de interr de bits Puerto 2 y Puerto 0
+
+//!<Bajo flags de Interr por GPIO
+#define     IO0IntClr  ( (uint32_t  * ) 0x4002808CUL ) //Bajo flags de Interr Puerto 0
+#define     IO2IntClr  ( (uint32_t  * ) 0x400280ACUL ) //Bajo flags de Interr Puerto 2
+
+
+
+/**
+ * Fin de Interrumpciones Externas
+ */
+
+#endif /* REGS_H_ */

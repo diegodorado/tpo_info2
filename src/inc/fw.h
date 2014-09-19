@@ -12,6 +12,7 @@
 #include "../fw/lpc_1769.h"
 #include "../fw/clock.h"
 #include "../fw/dac.h"
+#include "../fw/periph.h"
 #include "sysdefs.h" //necesario??
 
 #endif /* FW_H_ */

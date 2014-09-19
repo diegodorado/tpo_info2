@@ -10,7 +10,7 @@
 */
 void Inicializar_Timer(void)
 {
-	SetPINSEL( 1 , 26 , 3 );
+	set_pin_sel( 1 , 26 , 3 );
 
 	PCONP |= 1 << 1 ;
 	PCLKSEL0 |= 0 << 2 ;

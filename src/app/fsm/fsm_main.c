@@ -30,9 +30,11 @@ void fsm_main_idle( void)
 {
   // estado de reposo...
   // se puede usar este estado para tests
-  audio_test();
-  lcd_test();
-
+  //audio_test();
+  //lcd_clear();
+  lcd_set_cursor(0, 0);
+  lcd_print("IDLE STATE ...zz");
+  //lcd_print("goodbye!");
 }
 
 // NOTA:
@@ -45,10 +47,18 @@ void fsm_main_idle( void)
 void fsm_main_playback( void)
 {
   // se llama a la submaquina fsm_playback
-  fsm_playback();
+  lcd_set_cursor(0, 0);
+  lcd_print("PLAYBACK STATE!");
+
+  //fsm_playback();
 }
 
 void fsm_main_write( void){
   // se llama a la submaquina fsm_write
-  fsm_write();
+
+  lcd_set_cursor(0, 0);
+  lcd_print("WRITE STATE **");
+
+
+  //fsm_write();
 }
