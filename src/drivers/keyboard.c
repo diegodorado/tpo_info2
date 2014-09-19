@@ -33,7 +33,7 @@ void keyboard_setup(void){
 
 void keyboard_handle_key(uint8_t key){
   if(key == 1)
-    fsm_main_state = FSM_MAIN_STATE_PLAYBACK;
+    fsm_main_change(FSM_MAIN_STATE_PLAYBACK);
   else if(key == 4)
-    fsm_main_state = FSM_MAIN_STATE_WRITE;
+    fsm_main_change( FSM_MAIN_STATE_WRITE);
 }

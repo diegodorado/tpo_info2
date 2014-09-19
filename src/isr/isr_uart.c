@@ -39,7 +39,7 @@ void UART1_IRQHandler(void){
 
       //010--> Interr por RX
       case (0x02):
-        lcd_set_cursor(1, 1);
+        lcd_set_cursor(6, 1);
         lcd_print("RX");
         data = U1RBR;
         uart1_tx_push(data);
