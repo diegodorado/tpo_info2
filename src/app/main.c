@@ -1,4 +1,4 @@
-#include "setup.h"
+#include "setup/setup.h"
 #include "fsm/fsm_main.h"
 
 int main(void)

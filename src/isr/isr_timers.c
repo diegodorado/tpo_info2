@@ -9,16 +9,24 @@
 
 void TIMER0_IRQHandler(void){
   //todo: implementar interrupcion
+  while(1);
+
 }
 
 void TIMER1_IRQHandler(void){
   //todo: implementar interrupcion
+  while(1);
+
 }
 
 void TIMER2_IRQHandler(void){
   //todo: implementar interrupcion
+  while(1);
+
 }
 
 void TIMER3_IRQHandler(void){
   //todo: implementar interrupcion
+  while(1);
+
 }

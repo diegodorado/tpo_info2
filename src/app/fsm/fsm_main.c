@@ -1,6 +1,5 @@
 #include "fsm_main.h"
-#include "fsm_playback.h"
-#include "fsm_write.h"
+
 
 fsm_main_state_t fsm_main_state = FSM_MAIN_STATE_IDLE;
 

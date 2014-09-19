@@ -9,8 +9,12 @@
 
 void UART0_IRQHandler(void){
   //todo: implementar interrupcion
+  while(1);
+
 }
 
 void UART1_IRQHandler(void){
   //todo: implementar interrupcion
+  while(1);
+
 }

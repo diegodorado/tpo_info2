@@ -8,4 +8,5 @@
 
 void DMA_IRQHandler(void){
   //todo: implementar interrupcion
+  while(1);
 }

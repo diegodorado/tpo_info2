@@ -9,17 +9,25 @@
 
 void EINT0_IRQHandler(void){
   //todo: implementar interrupcion
+  while(1);
+
 }
 
 void EINT1_IRQHandler(void){
   //todo: implementar interrupcion
+  while(1);
+
 }
 
 void EINT2_IRQHandler(void){
   //todo: implementar interrupcion
+  while(1);
+
 }
 
 void EINT3_IRQHandler(void){
   //todo: implementar interrupcion
+  while(1);
+
 }
 

@@ -8,6 +8,10 @@
 #ifndef FSM_MAIN_H_
 #define FSM_MAIN_H_
 
+// include submachines
+#include "fsm_playback.h"
+#include "fsm_write.h"
+
 typedef enum { FSM_MAIN_STATE_IDLE, FSM_MAIN_STATE_PLAYBACK, FSM_MAIN_STATE_WRITE } fsm_main_state_t;
 
 extern fsm_main_state_t fsm_main_state;
