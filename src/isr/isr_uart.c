@@ -30,25 +30,19 @@ void UART1_IRQHandler(void){
 
       //001--> Interr por TX
       case (0x01):
-        lcd_set_cursor(1, 1);
-        lcd_print("TX");
-        data = uart1_rx_pop();
+        data = uart1_tx_pop();
         if(data>0)
           U1THR = data;
         break;
 
       //010--> Interr por RX
       case (0x02):
-        lcd_set_cursor(6, 1);
-        lcd_print("RX");
         data = U1RBR;
-        uart1_tx_push(data);
+
         break;
 
       //011--> Interr por LINE STATUS
       case (0x03):
-        lcd_set_cursor(1, 1);
-        lcd_print("LSR");
         break;
 
     }

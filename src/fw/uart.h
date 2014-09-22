@@ -111,7 +111,7 @@ uint8_t in_rx_UART1;
 void uart1_setup(void);
 
 void uart1_tx_push ( uint8_t);
-uint8_t uart1_rx_pop ( void);
+uint8_t uart1_tx_pop ( void);
 
 
 #endif /* UART_H_ */

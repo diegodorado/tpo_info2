@@ -6,15 +6,15 @@ int main(void)
   //inicializacion del equipo
   setup();
 
-	//pasa el control del ciclo a la
-	//maquina de estados principal
-	fsm_main();
+  // inicia la maquina principal
+  fsm_main_start();
 
-	//aunque no es estrictamente necesario
-	//ya que la maquina de estados principal nunca termina
-	//este while indica que el programa no debe terminar nunca
-	while(1){};
+ 	while(1){
+	   //pasa el control del ciclo a la
+	   //maquina de estados principal
+	   fsm_main_update();
+ 	}
 
-	//esta devolucion es para satisfacer al compilador, aunque nunca suceda
-	return 1;
+	 //esta devolucion es para satisfacer al compilador, aunque nunca suceda
+ 	return 1;
 }

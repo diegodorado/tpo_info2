@@ -46,10 +46,10 @@ void uart1_setup(void)
 extern uint8_t buf_rx_UART1[UART_BUFFER_SIZE];
 extern uint8_t buf_tx_UART1[UART_BUFFER_SIZE];
 
-extern uint8_t out_tx_UART1;
-extern uint8_t in_tx_UART1;
-extern uint8_t out_rx_UART1;
-extern uint8_t in_rx_UART1;
+extern uint8_t out_tx_UART1 = 0;
+extern uint8_t in_tx_UART1 = 0;
+extern uint8_t out_rx_UART1 = 0;
+extern uint8_t in_rx_UART1 = 0;
 
 
 
@@ -62,7 +62,7 @@ void uart1_tx_push ( uint8_t data )
 
   //Si esta vacio el THR
   if ( U1LSR & 0x20 ) {
-    data = uart1_rx_pop();
+    data = uart1_tx_pop();
     U1THR = data;
   }
 
@@ -70,13 +70,14 @@ void uart1_tx_push ( uint8_t data )
 
 
 
-uint8_t uart1_rx_pop ( void)
+uint8_t uart1_tx_pop ( void)
 {
-  uint32_t aux;
 
-  aux = buf_rx_UART1[out_rx_UART1];
-  out_rx_UART1++;
-  out_rx_UART1 %= UART_BUFFER_SIZE;
+  uint8_t aux;
+
+  aux = buf_tx_UART1[out_tx_UART1];
+  out_tx_UART1++;
+  out_tx_UART1 %= UART_BUFFER_SIZE;
 
   return aux;
 

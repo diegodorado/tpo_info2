@@ -1,5 +1,5 @@
 /*
- * micro.c
+ * device.c
  *
  *  Created on: Sep 19, 2014
  *      Author: diego
@@ -8,8 +8,16 @@
 
 
 
-#include "micro.h"
+#include "device.h"
 
+
+void device_setup_clock(void);
+void turn_rgb_led_off(void);
+
+void device_setup(void){
+  device_setup_clock();
+  turn_rgb_led_off();
+}
 
 /********************************************************************************
  \fn  void InitPLL (void)
@@ -21,7 +29,8 @@
   \param  void
  \return void
 */
-void micro_setup(void){
+
+void device_setup_clock(void){
   SCS       = SCS_Value;
 
   if (SCS_Value & (1 << 5))               /* If Main Oscillator is enabled      */
@@ -74,4 +83,16 @@ void micro_setup(void){
 
 }
 
+
+void turn_rgb_led_off(void){
+  gpio_set_dir(2,1,1);
+  gpio_set_dir(2,2,1);
+  gpio_set_dir(2,3,1);
+
+  gpio_set_pin(2,1,0);
+  gpio_set_pin(2,2,0);
+  gpio_set_pin(2,3,0);
+
+
+}
 

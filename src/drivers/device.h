@@ -5,13 +5,13 @@
  *      Author: diego
  */
 
-#ifndef MICRO_H_
-#define MICRO_H_
+#ifndef DEVICE_H_
+#define DEVICE_H_
 
 //include firmware
 #include "fw.h"
 
-void micro_setup(void);
+void device_setup(void);
 
 
-#endif /* MICRO_H_ */
+#endif /* DEVICE_H_ */

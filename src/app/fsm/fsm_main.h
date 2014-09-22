@@ -29,7 +29,8 @@ typedef enum {
   FSM_MAIN_STATE_WRITE,
 } fsm_main_state_t;
 
-void fsm_main(void);
-void fsm_main_change(fsm_main_state_t state);
+void fsm_main_update(void);
+void fsm_main_start(void);
+void fsm_main_change(fsm_main_state_t);
 
 #endif /* FSM_MAIN_H_ */

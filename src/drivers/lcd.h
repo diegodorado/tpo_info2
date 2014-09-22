@@ -5,9 +5,6 @@
 #include "fw.h"
 #include "sysdefs.h"
 
-void lcd_setup(void);
-
-
 
 #define LCD_LOW 0
 #define LCD_HIGH 1
@@ -57,16 +54,10 @@ void lcd_setup(void);
 #define LCD_5x10DOTS 0x04
 #define LCD_5x8DOTS 0x00
 
-void lcd_init(void);
-void lcd_begin(uint8_t, uint8_t, uint8_t);
+void lcd_setup(void);
 void lcd_clear(void);
-void lcd_set_cursor(uint8_t, uint8_t);
-void lcd_display(void);
-void lcd_command(uint8_t);
-void lcd_write(uint8_t);
-void lcd_send(uint8_t, uint8_t);
-void lcd_pulse_enable(void);
-void lcd_write_4_bits(uint8_t);
 void lcd_print(char *);
+void lcd_print_at(char *,uint8_t, uint8_t);
+void lcd_refresh(void);
 
 #endif /* LCD_H_ */

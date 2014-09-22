@@ -5,10 +5,9 @@
  *      Author: diego
  */
 
+#include "drivers.h"
 
-volatile static int us = 0;
 void SysTick_Handler(void)
 {
-  // cuento microsegundos
-  us++;
+  systick_handle_tick();
 }

@@ -8,8 +8,10 @@
 #include "fw.h"
 
 
-static fsm_main_state_t state = -1; // -1 mean no state set yet
+static fsm_main_state_t state = FSM_MAIN_STATE_IDLE; // estado inicial
 
+// funciones primitivas de los estados y
+// sus transiciones
 static void idle_enter( void);
 static void idle_update( void);
 static void idle_exit( void);
@@ -32,50 +34,71 @@ void (* const state_table[][3])(void) = {
 };
 
 
-void fsm_main(void)
+void fsm_main_update(void)
 {
-  // es la maquina de estados principal
-  // y por lo tanto toma el control del loop principal
-  // sin retornar nunca
-  while ( 1 ) {
-    // implementada con punteros a funcion
-    // cambiando fsm_main_state se cambia el estado de la maquina
-    // En este caso, cada estado es una submaquina.
-    state_table[ state ][ON_UPDATE]();
-  }
+  // implementada con punteros a funcion
+  // cambiando fsm_main_state se cambia el estado de la maquina
+  // En este caso, cada estado es una submaquina.
+  (*state_table[ state ][ON_UPDATE])();
 }
+
+
+void fsm_main_start(){
+  //ejecuta el on enter del estado inicial
+  (*state_table[ state ][ON_ENTER])();
+}
+
 
 void fsm_main_change(fsm_main_state_t st){
   if(st==state) return; //no es un cambio de estado
 
-  // solo si viene de un estado previo
   // ejecutar on_exit.
-  if(state!=-1)
-    state_table[ state ][ON_EXIT]();
+  (*state_table[ state ][ON_EXIT]) ();
 
   //setea el estado nuevo
   state = st;
 
   //ahora, ejecuta on_enter
-  state_table[ state ][ON_ENTER]();
+  (*state_table[ state ][ON_ENTER]) ();
 
 }
 
 
 
+// implementacion de las funciones de los estados
+
+static volatile uint32_t seconds = 0;
+
+void update_lcd_timer(void){
+  char str_clck[] = "00:00";
+
+  int aux = seconds++;
+
+  str_clck[4] = '0' + (aux%10);  aux /=10;
+  str_clck[3] = '0' + (aux%6) ;  aux /=6;
+  str_clck[1] = '0' + (aux%10);  aux /=10;
+  str_clck[0] = '0' + (aux%6) ;
+
+  lcd_print_at(str_clck, 1,11);
+
+}
+
 static void idle_enter( void){
   // estado de reposo...
   // se puede usar este estado para tests
   //audio_test();
-  //lcd_clear();
-  lcd_set_cursor(0, 0);
-  lcd_print("IDLE STATE ...zz");
+  lcd_clear();
+  ///lcd_print("IDLE STATE");
+
+  systick_delay_async(1000, 1,update_lcd_timer);
+
 
 }
 
 static void idle_update( void){
   // estado de reposo...
   // no tiene submaquina
+
 }
 
 static void idle_exit( void){
@@ -84,7 +107,7 @@ static void idle_exit( void){
 
 
 static void playback_enter( void){
-  uart1_tx_push(0x55);
+  uart1_tx_push(0x40);
 }
 
 static void playback_update( void){
@@ -98,8 +121,7 @@ static void playback_exit( void){
 
 
 static void write_enter( void){
-  lcd_set_cursor(0, 0);
-  lcd_print("WRITE STATE **");
+  lcd_print_at("WRITE STATE",0,0);
 }
 
 static void write_update( void){
