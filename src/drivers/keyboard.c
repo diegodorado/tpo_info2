@@ -118,6 +118,7 @@ void keyboard_handle_key(uint8_t key){
 
   if(key == 0){
     lcd_print_at("SEND",0,0);
+    uart1_tx_push('0' + value);
   }
   else if(key == 1){
     value +=10;

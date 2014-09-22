@@ -20,7 +20,8 @@ void UART0_IRQHandler(void){
 void UART1_IRQHandler(void){
   //todo: implementar interrupcion
 
-  uint8_t iir,data;
+  uint32_t iir,data;
+  char received[2];
 
   do
   {
@@ -38,6 +39,9 @@ void UART1_IRQHandler(void){
       //010--> Interr por RX
       case (0x02):
         data = U1RBR;
+        received[0] = data;
+        received[1] = '\0';
+        lcd_print_at(received,0,8);
 
         break;
 

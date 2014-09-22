@@ -43,22 +43,18 @@ void uart1_setup(void)
 
 
 
-extern uint8_t buf_rx_UART1[UART_BUFFER_SIZE];
-extern uint8_t buf_tx_UART1[UART_BUFFER_SIZE];
-
-extern uint8_t out_tx_UART1 = 0;
-extern uint8_t in_tx_UART1 = 0;
-extern uint8_t out_rx_UART1 = 0;
-extern uint8_t in_rx_UART1 = 0;
+static uint8_t uart_tx_buffer[UART_BUFFER_SIZE];
+static uint8_t uart_tx_in_index = 0;
+static uint8_t uart_tx_out_index = 0;
 
 
 
 
 void uart1_tx_push ( uint8_t data )
 {
-  buf_tx_UART1 [in_tx_UART1] = data;
-  in_tx_UART1++;
-  in_tx_UART1 %= UART_BUFFER_SIZE;
+  uart_tx_buffer [uart_tx_in_index] = data;
+  uart_tx_in_index++;
+  uart_tx_in_index %= UART_BUFFER_SIZE;
 
   //Si esta vacio el THR
   if ( U1LSR & 0x20 ) {
@@ -75,9 +71,11 @@ uint8_t uart1_tx_pop ( void)
 
   uint8_t aux;
 
-  aux = buf_tx_UART1[out_tx_UART1];
-  out_tx_UART1++;
-  out_tx_UART1 %= UART_BUFFER_SIZE;
+  aux = uart_tx_buffer[uart_tx_out_index];
+  if(uart_tx_out_index!=uart_tx_in_index){
+    uart_tx_out_index++;
+    uart_tx_out_index %= UART_BUFFER_SIZE;
+  }
 
   return aux;
 

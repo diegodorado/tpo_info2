@@ -98,18 +98,7 @@
 
 #define UART_BUFFER_SIZE 100
 
-uint8_t buf_rx_UART1[UART_BUFFER_SIZE];
-uint8_t buf_tx_UART1[UART_BUFFER_SIZE];
-
-uint8_t out_tx_UART1;
-uint8_t in_tx_UART1;
-uint8_t out_rx_UART1;
-uint8_t in_rx_UART1;
-
-
-
 void uart1_setup(void);
-
 void uart1_tx_push ( uint8_t);
 uint8_t uart1_tx_pop ( void);
 
