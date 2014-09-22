@@ -18,6 +18,13 @@
 #define     EINT2_PIN       2,12
 #define     EINT3_PIN       2,13
 
+#define     KEY0_PIN       2,10
+#define     KEY1_PIN       0,18
+#define     KEY2_PIN       0,11
+#define     KEY3_PIN       2,13
+
+#define KEY_PIN(i) KEY##i##_PIN
+
 void keyboard_setup(void);
 void keyboard_handle_key(uint8_t);
 

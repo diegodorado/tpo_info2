@@ -88,7 +88,7 @@ void lcd_print(char *str)
 {
   int i;
   //from cursor trhough size of buffer or end of string
-  for(i=cursor;(i<32) || *str;i++){
+  for(i=cursor;(i<32) && *str!='\0';i++){
     if(text_buffer[i]!=*str){
       text_buffer[i]=*str;
       dirty_mask |= (0x01<<i); //marca ese char como dirty
