@@ -12,6 +12,7 @@
 #include "fw.h"
 
 #define CALLBACKS_QUEUE_SIZE 32 // 32 bits de control
+#define MS_PER_TICK 10
 
 void systick_setup(void);
 void systick_handle_tick(void);

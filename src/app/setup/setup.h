@@ -8,9 +8,7 @@
 #ifndef SETUP_H_
 #define SETUP_H_
 
-
 // include sub setups
-
 #include "drivers.h"
 
 void setup(void);

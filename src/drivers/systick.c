@@ -21,7 +21,7 @@ void (* callbacks_queue[CALLBACKS_QUEUE_SIZE])(void);
 
 
 void systick_setup(void){
-  STRELOAD  = ( STCALIB/10) - 1 ;   // configurado para interrumpir cada 1 milisegundo
+  STRELOAD  =  STCALIB;   // configurado para interrumpir cada 10 ms
   STCURR = 0;
   ENABLE = 1;
   TICKINT = 1;
@@ -39,7 +39,8 @@ void systick_handle_tick(void)
 
     if( callbacks_enabled_mask & (0x01<<i) ){    // chequear si el callback esta habilitado
 
-      if(--callbacks_millisecs[i] <= 0){    // predecrementar su cuenta y chequear si llego a su fin
+      callbacks_millisecs[i] -= MS_PER_TICK; // decrementar su cuenta
+      if(callbacks_millisecs[i] <= 0){    // chequear si llego a su fin
 
         if( callbacks_periodic_mask & (0x01<<i) )   //chequear si el callback es periodico
           callbacks_millisecs[i] = callbacks_millisecs_load[i];   //recargar la cuenta
@@ -59,7 +60,7 @@ void systick_handle_tick(void)
   }
   // incrementar la cuenta global de milisegundos
   // de uso exclusivo de systick_delay_sync()
-  millisecs++;
+  millisecs += MS_PER_TICK;
 }
 
 // delay bloqueante que toma control del codigo.

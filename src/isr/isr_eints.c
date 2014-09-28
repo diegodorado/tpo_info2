@@ -8,31 +8,21 @@
 #include "drivers.h"
 
 
+#ifdef USE_SW1_WITH_INTERRUPTS
 void EINT0_IRQHandler(void){
-  //todo: implementar interrupcion
-
   // borro el flag EINT0 del registro EXTINT
   CLR_EINT0;
-  keyboard_handle_key(1);
+  keyboard_handle_key(0);
 
 
 }
+#endif
 
-void EINT1_IRQHandler(void){
-  //todo: implementar interrupcion
-  while(1);
-
-}
-
-void EINT2_IRQHandler(void){
-  //todo: implementar interrupcion
-  while(1);
-
-}
-
+#ifdef USE_SW4_WITH_INTERRUPTS
 void EINT3_IRQHandler(void){
   // borro el flag EINT3 del registro EXTINT
   CLR_EINT3;
-  keyboard_handle_key(4);
+  keyboard_handle_key(3);
 }
+#endif
 

@@ -8,45 +8,32 @@
 #include "fw.h"
 #include "drivers.h"
 
-//todo: decidir cual UART utilizar
+#ifdef USE_UART0
 
 void UART0_IRQHandler(void){
-  //todo: implementar interrupcion
-  while(1);
 
-}
-
-
-void UART1_IRQHandler(void){
-  //todo: implementar interrupcion
-
-  uint32_t iir,data;
-  char received[2];
+  uint32_t iir;
 
   do
   {
-    iir = U1IIR; // guardo el valor ya que se borra al leerlo
+    iir = U0IIR; // guardo el valor ya que se borra al leerlo
 
     switch((iir & 0x07)>>1) {
 
       //001--> Interr por TX
       case (0x01):
-        data = uart1_tx_pop();
-        if(data>0)
-          U1THR = data;
+        if(uart0_rx_data_size()>0)
+          U0THR = uart0_tx_pop();
         break;
 
       //010--> Interr por RX
       case (0x02):
-        data = U1RBR;
-        received[0] = data;
-        received[1] = '\0';
-        lcd_print_at(received,0,8);
-
+        uart0_rx_push(U0RBR);
         break;
 
       //011--> Interr por LINE STATUS
       case (0x03):
+        //todo: implementar Interr por LINE STATUS
         break;
 
     }
@@ -56,3 +43,41 @@ void UART1_IRQHandler(void){
 
 
 }
+#endif
+
+#ifdef USE_UART1
+
+void UART1_IRQHandler(void){
+
+  uint32_t iir;
+
+  do
+  {
+    iir = U1IIR; // guardo el valor ya que se borra al leerlo
+
+    switch((iir & 0x07)>>1) {
+
+      //001--> Interr por TX
+      case (0x01):
+        if(uart1_rx_data_size()>0)
+          U1THR = uart1_tx_pop();
+        break;
+
+      //010--> Interr por RX
+      case (0x02):
+        uart1_rx_push(U1RBR);
+        break;
+
+      //011--> Interr por LINE STATUS
+      case (0x03):
+        //todo: implementar Interr por LINE STATUS
+        break;
+
+    }
+
+
+  } while( ! ( iir & 0x01 ) ); // continuar mientras haya interrupciones pendientes
+
+
+}
+#endif

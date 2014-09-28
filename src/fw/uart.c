@@ -8,8 +8,63 @@
 
 #include "uart.h"
 
+//private static buffers, read and written only by function calls
+static uart_buffer_t uart0_tx_buffer;
+static uart_buffer_t uart0_rx_buffer;
+static uart_buffer_t uart1_tx_buffer;
+static uart_buffer_t uart1_rx_buffer;
+
+//private functions
+static void buffer_push ( uart_buffer_t * , uint8_t );
+static uint8_t buffer_pop ( uart_buffer_t * );
+
+
+
+void uart0_setup(void)
+{
+
+  //reset buffers indexes
+  uart0_rx_buffer.in_index = 0;
+  uart0_rx_buffer.out_index = 0;
+  uart0_tx_buffer.in_index = 0;
+  uart0_tx_buffer.out_index = 0;
+
+
+  //1.- Registro PCONP (0x400FC0C4) - bit 3 en 1 prende la UART:
+  PCONP |= 0x01<<3;
+  //2.- Registro PCLKSEL0 (0x400FC1A8) - bits 6 y 7 en 0 seleccionan que el clk de la UART0 sea CCLK/4:
+  PCLKSEL0 &= ~(0x03<<6); //con un CCLOK=100Mhz, nos queda PCLOCK=25Mhz
+  //3.- Registro U1LCR (0x4001000C) - transmision de 8 bits, 1 bit de stop, sin paridad, sin break cond, DLAB = 1:
+  U0LCR = 0x83;
+  //4.- Registros U1DLL (0x40010000) y U1DLM (0x40010004) - 9600 baudios:
+  U0DLM = 0X00;
+  U0DLL = 0xA3;//0xA3 para 9600
+  //5.- Registros PINSEL0 (0x4002C000) y PINSEL1 (0x4002C004) - habilitan las funciones especiales de los pines:
+  //5. habilitan las funciones especiales de los pines:
+  set_pin_sel(U0TX_PIN,1);
+  set_pin_sel(U0RX_PIN,1);
+  //6.- Registro U1LCR, pongo DLAB en 0:
+  U0LCR &= ~(0x01<<7);// pongo en cero el bit 7 DLAB=0
+  //7. Habilito las interrupciones (En la UART -IER- y en el NVIC -ISER)
+  U0IER |= 0X03 ; // bit 0 y 1 del registro U1Ier Habilia int por TX y RX
+  ISER0 |= (1<<5);
+
+
+
+ }
+
+
+
+
 void uart1_setup(void)
 {
+
+  //reset buffers indexes
+  uart1_rx_buffer.in_index = 0;
+  uart1_rx_buffer.out_index = 0;
+  uart1_tx_buffer.in_index = 0;
+  uart1_tx_buffer.out_index = 0;
+
   //TODO: Completar Inicializacion de UART1
   //1.- Registro PCONP: Energizo la UART:
   //1.- Registro PCONP (0x400FC0C4) - bit 4 en 1 prende la UART:
@@ -43,41 +98,98 @@ void uart1_setup(void)
 
 
 
-static uint8_t uart_tx_buffer[UART_BUFFER_SIZE];
-static uint8_t uart_tx_in_index = 0;
-static uint8_t uart_tx_out_index = 0;
 
 
+
+void uart0_rx_push ( uint8_t data )
+{
+  buffer_push(&uart0_rx_buffer, data);
+}
+
+
+uint8_t uart0_rx_pop ( void)
+{
+  //todo: check error of no data
+  return buffer_pop(&uart0_rx_buffer);
+
+}
+
+void uart0_tx_push ( uint8_t data )
+{
+  buffer_push(&uart0_tx_buffer, data);
+  //Si esta vacio el THR
+  if ( U0LSR & 0x20 )
+    U0THR = uart0_tx_pop();
+
+}
+
+
+uint8_t uart0_tx_pop ( void)
+{
+  //todo: check error of no data
+  return buffer_pop(&uart0_tx_buffer);
+
+}
+
+
+
+
+
+void uart1_rx_push ( uint8_t data )
+{
+  buffer_push(&uart1_rx_buffer, data);
+}
+
+
+uint8_t uart1_rx_pop ( void)
+{
+  //todo: check error of no data
+  return buffer_pop(&uart1_rx_buffer);
+
+}
 
 
 void uart1_tx_push ( uint8_t data )
 {
-  uart_tx_buffer [uart_tx_in_index] = data;
-  uart_tx_in_index++;
-  uart_tx_in_index %= UART_BUFFER_SIZE;
-
+  buffer_push(&uart1_tx_buffer, data);
   //Si esta vacio el THR
-  if ( U1LSR & 0x20 ) {
-    data = uart1_tx_pop();
-    U1THR = data;
-  }
+  if ( U1LSR & 0x20 )
+    U1THR = uart1_tx_pop();
 
 }
-
 
 
 uint8_t uart1_tx_pop ( void)
 {
-
-  uint8_t aux;
-
-  aux = uart_tx_buffer[uart_tx_out_index];
-  if(uart_tx_out_index!=uart_tx_in_index){
-    uart_tx_out_index++;
-    uart_tx_out_index %= UART_BUFFER_SIZE;
-  }
-
-  return aux;
+  //todo: check error of no data
+  return buffer_pop(&uart1_tx_buffer);
 
 }
 
+uint8_t uart0_rx_data_size (void) { return BUFFER_DATA_SIZE(uart0_rx_buffer); }
+uint8_t uart0_tx_data_size (void) { return BUFFER_DATA_SIZE(uart0_tx_buffer); }
+uint8_t uart1_rx_data_size (void) { return BUFFER_DATA_SIZE(uart1_rx_buffer); }
+uint8_t uart1_tx_data_size (void) { return BUFFER_DATA_SIZE(uart1_tx_buffer); }
+
+
+static void buffer_push ( uart_buffer_t * buf_ptr, uint8_t data )
+{
+  buf_ptr->data[buf_ptr->in_index] = data;
+  buf_ptr->in_index++;
+  buf_ptr->in_index %= BUFFER_SIZE(buf_ptr->data);
+}
+
+static uint8_t buffer_pop ( uart_buffer_t * buf_ptr)
+{
+  //todo: handle no more data
+  uint8_t result = 0;
+
+  if(buf_ptr->out_index!=buf_ptr->in_index){
+    //only read buffer if out_index != in_index
+    result = buf_ptr->data[buf_ptr->out_index];
+    buf_ptr->out_index++;
+    buf_ptr->out_index %= BUFFER_SIZE(buf_ptr->data);
+  }
+
+  return result;
+}

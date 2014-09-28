@@ -9,35 +9,64 @@
 #include "keyboard.h"
 #include "fsm.h"
 #include "drivers.h"
+#include <stdio.h>
 
-
-static void keyboard_setup_with_polling(void);
 static void keyboard_refresh(void);
-static void keyboard_setup_with_interrupts(void);
 
 
 void keyboard_setup(void){
-  keyboard_setup_with_polling();
-}
 
-static void keyboard_setup_with_polling(void){
+#ifdef USE_SW1_WITH_INTERRUPTS
+  // Configuro el SW1 para que trabaje como EINT0
+  // Esto debe hacerse con la interrupcion deshabilitada
+  set_pin_sel(EINT0_PIN, 1);
+  // Configuro la interrupcion externa 0 por flanco
+  EXTMODE0_F;
+  // Habilito Interrupcion Externa 0
+  ISE_EINT0;
+#endif
+
+#ifdef USE_SW4_WITH_INTERRUPTS
+  // Configuro el SW4 para que trabaje como EINT3
+  // Esto debe hacerse con la interrupcion deshabilitada
+  set_pin_sel(EINT3_PIN, 1);
+  // Configuro la interrupcion externa 0 por flanco
+  EXTMODE0_F;
+  // Habilito Interrupcion Externa 0
+  ISE_EINT3;
+#endif
+
+#ifdef USE_SW1_WITH_POLLING
   set_pin_sel( KEY_PIN(0),0);
   gpio_set_dir(KEY_PIN(0),0);
-  set_pin_sel(KEY_PIN(1),0);
+#endif
+#ifdef USE_SW2_WITH_POLLING
+  set_pin_sel( KEY_PIN(1),0);
   gpio_set_dir(KEY_PIN(1),0);
-  set_pin_sel(KEY_PIN(2),0);
+#endif
+#ifdef USE_SW3_WITH_POLLING
+  set_pin_sel( KEY_PIN(2),0);
   gpio_set_dir(KEY_PIN(2),0);
-  set_pin_sel(KEY_PIN(3),0);
+#endif
+#ifdef USE_SW4_WITH_POLLING
+  set_pin_sel( KEY_PIN(3),0);
   gpio_set_dir(KEY_PIN(3),0);
+#endif
 
+
+#ifdef USE_SW_WITH_POLLING
   systick_delay_async(20, 1,keyboard_refresh);
+#endif
 
 }
 
+
+#ifdef USE_SW_WITH_POLLING
 static void keyboard_refresh(void){
 
   static char check[4] = {1,1,1,1};
 
+#ifdef USE_SW1_WITH_POLLING
   if(gpio_get_pin(KEY_PIN(0),0)){
    if (check[0]){
       keyboard_handle_key(0);
@@ -47,7 +76,9 @@ static void keyboard_refresh(void){
   else{
     check[0] = 1;
   }
+#endif
 
+#ifdef USE_SW2_WITH_POLLING
   if(gpio_get_pin(KEY_PIN(1),0)){
    if (check[1]){
       keyboard_handle_key(1);
@@ -57,7 +88,9 @@ static void keyboard_refresh(void){
   else{
     check[1] = 1;
   }
+#endif
 
+#ifdef USE_SW3_WITH_POLLING
   if(gpio_get_pin(KEY_PIN(2),0)){
    if (check[2]){
       keyboard_handle_key(2);
@@ -67,6 +100,9 @@ static void keyboard_refresh(void){
   else{
     check[2] = 1;
   }
+#endif
+
+#ifdef USE_SW4_WITH_POLLING
 
   if(gpio_get_pin(KEY_PIN(3),0)){
    if (check[3]){
@@ -78,32 +114,12 @@ static void keyboard_refresh(void){
     check[3] = 1;
   }
 
-
+#endif
 
 
 }
+#endif  /* USE_SW_WITH_POLLING */
 
-static void keyboard_setup_with_interrupts(void){
-  //todo: implementar la inicializacion
-
-  // Configuro el SW1 para que trabaje como EINT0
-  // Esto debe hacerse con la interrupcion deshabilitada
-  set_pin_sel(EINT0_PIN, 1);
-  // Configuro la interrupcion externa 0 por flanco
-  EXTMODE0_F;
-  // Habilito Interrupcion Externa 0
-  ISE_EINT0;
-
-
-  // Configuro el SW4 para que trabaje como EINT3
-  // Esto debe hacerse con la interrupcion deshabilitada
-  set_pin_sel(EINT3_PIN, 1);
-  // Configuro la interrupcion externa 0 por flanco
-  EXTMODE0_F;
-  // Habilito Interrupcion Externa 0
-  ISE_EINT3;
-
-}
 
 static void i_to_str(uint32_t value, char* result){
   result[2] = '\0';
@@ -117,13 +133,15 @@ void keyboard_handle_key(uint8_t key){
   char result[3];
 
   if(key == 0){
-    lcd_print_at("SEND",0,0);
-    uart1_tx_push('0' + value);
+    printf("key 0 pressed");
+    if(client_data_frame_received()){
+      lcd_print_at("Received",0,0);
+    }else{
+      lcd_print_at("No data yet",0,0);
+    }
   }
   else if(key == 1){
-    value +=10;
-    i_to_str(value,result);
-    lcd_print_at(result,1,0);
+    client_send_data_frame (10,25,'0' + value,1);
   }
   else if(key == 2){
     i_to_str(++value,result);
