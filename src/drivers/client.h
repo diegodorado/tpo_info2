@@ -10,6 +10,8 @@
 
 //include firmware
 #include "fw.h"
+#include "drivers.h"
+
 
 
 /**
@@ -34,7 +36,8 @@ uint8_t client_rx_pop ( void);
 void client_tx_push ( uint8_t);
 uint8_t client_data_frame_received (void);
 
-void client_send_data_frame (uint8_t,uint8_t,uint8_t,uint8_t);
+void client_send_data_frame (uint8_t,uint8_t, uint8_t);
 tp4_data_frame_t client_decode_data_frame(void);
+uint8_t client_is_checksum_ok(tp4_data_frame_t);
 
 #endif /* CLIENT_H_ */

@@ -27,6 +27,8 @@ typedef enum {
   FSM_MAIN_STATE_IDLE,
   FSM_MAIN_STATE_PLAYBACK,
   FSM_MAIN_STATE_WRITE,
+  FSM_MAIN_STATE_RECEIVING,
+  FSM_MAIN_STATE_ERROR,
 } fsm_main_state_t;
 
 void fsm_main_update(void);

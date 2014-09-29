@@ -58,6 +58,12 @@ void lcd_setup(void);
 void lcd_clear(void);
 void lcd_print(char *);
 void lcd_print_at(char *,uint8_t, uint8_t);
+void lcd_print_char(char);
+void lcd_print_char_at(char ,uint8_t,uint8_t);
 void lcd_refresh(void);
+
+
+
+
 
 #endif /* LCD_H_ */

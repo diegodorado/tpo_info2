@@ -10,13 +10,12 @@ RegsLPC1769
 
 
 // REGISTROS ------------------------------------------------------------------------------------------------------------------------
-#define		PINSEL			( ( registro_t  * ) 0x4002C000UL )		//!< Direccion de inicio de los registros PINSEL
-#define		PINMODE			( ( registro_t  * ) 0x4002C040UL )		//!< Direccion de inicio de los registros de modo de los pines del GPIO
-#define		GPIO			( ( registro_t  * ) 0x2009C000UL )		//!< Direccion de inicio de los registros de GPIOs
-#define		SYSTICK			( ( registro_t  * ) 0xE000E010UL )		//!< Direccion de inicio de los registros de SYSTICK
+#define		PINSEL			( ( register_t  * ) 0x4002C000UL )		// Direccion de inicio de los registros PINSEL
+#define		PINMODE		( ( register_t  * ) 0x4002C040UL )		// Direccion de inicio de los registros de modo de los pines del GPIO
+#define		GPIO			  ( ( register_t  * ) 0x2009C000UL )		// Direccion de inicio de los registros de GPIOs
 
 
-#define		TIMER0			( ( registro_t  * ) 0x40004000UL )
+#define		TIMER0			( ( register_t  * ) 0x40004000UL )
 
 #define		T0IR			TIMER0[ 0 ]			/** IR - INTERRUPT REGISTER */
 	#define		IRMR0		0
@@ -53,8 +52,8 @@ RegsLPC1769
 #define		T0CR1			TIMER0[ 12 ]
 //los siguientes dos registros NO estan contigüos. Por ende no se continúa con
 //el offset
-#define		T0EMR			( * ( ( registro_t  * ) 0x4000403CUL ) )
-#define		T0CTCR			( * ( ( registro_t  * ) 0x40004070UL ) )/** CTCR - COUNT CONTROL REGISTER */
+#define		T0EMR			( * ( ( register_t  * ) 0x4000403CUL ) )
+#define		T0CTCR			( * ( ( register_t  * ) 0x40004070UL ) )/** CTCR - COUNT CONTROL REGISTER */
 	#define		TCM			0
 	#define		CIS			2
 
@@ -63,9 +62,9 @@ RegsLPC1769
 #define		NVIC_TIMER0		1
 // Nested Vectored Interrupt Controller (NVIC)
 // 0xE000E100UL : Direccion de inicio de los registros de habilitación (set) de interrupciones en el NVIC:
-#define		ISER		( ( registro_t  * ) 0xE000E100UL )
+#define		ISER		( ( register_t  * ) 0xE000E100UL )
 //!< 0xE000E180UL : Direccion de inicio de los registros de deshabilitacion (clear) de interrupciones en el NVIC:
-#define		ICER		( ( registro_t  * ) 0xE000E180UL )
+#define		ICER		( ( register_t  * ) 0xE000E180UL )
 
 // Registros ISER:
 #define		ISER0		ISER[0]
@@ -83,11 +82,11 @@ RegsLPC1769
 
 //  Power Control for Peripherals register (PCONP - 0x400F C0C4) [pag. 62 user manual LPC1769]
 // 0x400FC0C4UL : Direccion de inicio del registro de habilitación de dispositivos:
-#define 	PCONP	(* ( ( registro_t  * ) 0x400FC0C4UL ))
+#define 	PCONP	(* ( ( register_t  * ) 0x400FC0C4UL ))
 
 // Peripheral Clock Selection registers 0 and 1 (PCLKSEL0 -0x400F C1A8 and PCLKSEL1 - 0x400F C1AC) [pag. 56 user manual]
 // 0x400FC1A8UL : Direccion de inicio de los registros de seleccion de los CLKs de los dispositivos:
-#define		PCLKSEL		( ( registro_t  * ) 0x400FC1A8UL )
+#define		PCLKSEL		( ( register_t  * ) 0x400FC1A8UL )
 // Registros PCLKSEL
 #define		PCLKSEL0	PCLKSEL[0]
 #define		PCLKSEL1	PCLKSEL[1]
@@ -110,7 +109,7 @@ RegsLPC1769
 #define  EXTMODE0_F  EXTMODE[0] |= 0x00000001       // EINT0 por flanco
 
 //!<Registro EXTPOLAR : selecciona Polaridad del EXTMODE
-#define    EXTPOLAR        ( (uint32_t  * ) 0x400FC14C )
+#define    EXTPOLAR        ( (uint32_t  * ) 0x400FC14CUL )
 #define    EXTPOLAR3_P      EXTPOLAR[0] |= 0X00000001 << 3 // Flanco ó Nivel Positivo
 #define    EXTPOLAR2_P      EXTPOLAR[0] |= 0X00000001 << 2 // Flanco ó Nivel Positivo
 #define    EXTPOLAR1_P      EXTPOLAR[0] |= 0X00000001 << 1 // Flanco ó Nivel Positivo
@@ -185,17 +184,17 @@ typedef struct
  __R  uint32_t _STCALIB ;                   /*!< Offset: 0x0C  SysTick Calibration Register        */
 } systick_t;
 
-#define systick             ((systick_t *)       (0xE000E010))
+#define SYSTICK   ((systick_t *) 0xE000E010UL)
 
 #define MAX_TICKS 0x00fffffful
-#define STCTRL  systick->_STCTRL
- #define ENABLE  systick->_ENABLE
- #define TICKINT  systick->_TICKINT
- #define CLKSOURCE systick->_CLKSOURCE
- #define COUNTFLAG systick->_COUNTFLAG
-#define STRELOAD systick->_STRELOAD
-#define STCURR      systick->_STCURR
-#define STCALIB  systick->_STCALIB
+#define STCTRL  SYSTICK->_STCTRL
+ #define ENABLE  SYSTICK->_ENABLE
+ #define TICKINT  SYSTICK->_TICKINT
+ #define CLKSOURCE SYSTICK->_CLKSOURCE
+ #define COUNTFLAG SYSTICK->_COUNTFLAG
+#define STRELOAD SYSTICK->_STRELOAD
+#define STCURR      SYSTICK->_STCURR
+#define STCALIB  SYSTICK->_STCALIB
 
 /*
  * Fin de Systick
@@ -208,11 +207,53 @@ typedef struct
  **/
 
 
+
+// Table 280: UARTn Line Status Register bit description
+typedef struct{
+  __RW uint32_t RDR:1;           //Receiver Data Ready
+  __RW uint32_t OE:1;            // Overrun Error
+  __RW uint32_t PE:1;            // Parity Error
+  __RW uint32_t FE:1;            // Framing Error
+  __RW uint32_t BI:1;            // Break Interrupt
+  __RW uint32_t THRE:1;          // Transmitter Holding Register Empty
+  __RW uint32_t TEMT:1;          // Transmitter Empty
+  __RW uint32_t RXFE:1;          // Error in RX FIFO
+  __RW uint32_t RESERVED0:24;    // For alignement purposes
+} uart_lsr_t;
+
+
 //Table 295: UART1 Interrupt Identification Register (U1IIR - address 0x4001 0008) bit description
 typedef struct{
-  __RW uint32_t INT_STATUS:1; //Interrupt status. Note that it is active low ( 1 : No interrupt is pending.)
-  __RW uint32_t INT_ID:3; //Interrupt identification.
+  __RW uint32_t INT_STATUS:1;  //Interrupt status. Note that it is active low ( 1 : No interrupt is pending.)
+  __RW uint32_t INT_ID:3;      //Interrupt identification.
+  __RW uint32_t NOT_USED0:28;  //not used in this project
 } uart_iir_t;
+
+
+typedef struct
+{
+  union{
+    __R  uint32_t RESERVED0;         // For alignement purposes
+    __RW uint8_t DLL;                // Parte baja del divisor de la UART1
+    __R  uint8_t RBR;                // Registro de recepcion de la UART1
+    __W  uint8_t THR;                // Registro de transmision de la UART1
+  };
+  union{
+    __RW uint8_t DLM;                // Parte alta del divisor de la UART1
+    __W  uint32_t IER;               // Registro habilitacion de interrupciones de la UART1
+  };
+  union{
+    __R  uart_iir_t IIR;             // Registro de identificación de la interrupción de la UART1
+    __W  uint32_t FCR;               // Registro de control de la FIFO de la UART1
+  };
+
+  __RW uint32_t LCR;                 // Line CONTROL Register de la UART1
+  __R  uint32_t RESERVED1;           // For alignement purposes
+  __R  uart_lsr_t LSR;                 // Line STATUS Register de la UART1
+
+} uart_t;
+
+
 
 #define UART_INT_ID_RLS  0b011 //Receive Line Status
 #define UART_INT_ID_RDA  0b010 //Receive Data Available
@@ -221,63 +262,9 @@ typedef struct{
 //End Table 295
 
 
-// UART0:
-#define  DIR_UART0 ( ( uint32_t  * ) 0x4000C000UL )    // Registro de recepcion de la UART0
-#define  DIR_U0RBR ( ( uint32_t  * ) 0x4000C000UL )    // Registro de recepcion de la UART0
-#define  DIR_U0THR ( ( uint32_t  * ) 0x4000C000UL )    // Registro de transmision de la UART0
-#define  DIR_U0DLL ( ( uint32_t  * ) 0x4000C000UL )    // Parte baja del divisor de la UART0
 
-#define  DIR_U0DLM ( ( uint32_t  * ) 0x4000C004UL )    // Parte alta del divisor de la UART0
-#define  DIR_U0LCR ( ( uint32_t  * ) 0x4000C00CUL )    // Registro de control de la UART0
-#define  DIR_U0LSR ( ( uint32_t  * ) 0x4000C014UL )    // Registro de recepcion de la UART0
-
-// UART1:
-#define  DIR_U1DLL ( ( uint32_t  * ) 0x40010000UL )    // Parte baja del divisor de la UART1
-#define  DIR_U1RBR ( ( uint32_t  * ) 0x40010000UL )    // Registro de recepcion de la UART1
-#define  DIR_U1THR ( ( uint32_t  * ) 0x40010000UL )    // Registro de transmision de la UART1
-
-#define  DIR_U1DLM ( ( uint32_t  * ) 0x40010004UL )    // Parte alta del divisor de la UART1
-#define  DIR_U1IER ( ( uint32_t  * ) 0x40010004UL )    // Registro habilitacion de interrupciones de la UART1
-
-#define  DIR_U1IIR ( ( uint32_t  * ) 0x40010008UL )    // Registro de identificación de la interrupción de la UART1
-#define  DIR_U1LCR ( ( uint32_t  * ) 0x4001000CUL )    // Registro de control de la UART1
-#define  DIR_U1LSR ( ( uint32_t  * ) 0x40010014UL )    // Registro de recepcion de la UART1
-#define  DIR_U1FCR ( ( uint32_t  * ) 0x40010008UL )    // Registro de control de la FIFO de la UART1
-
-
-#define  U0RBR  DIR_UART0[0] // Registro de Recepción RBR
-#define  U0THR  DIR_UART0[0] // Registro de Transmisión THR
-#define  U0DLL  DIR_UART0[0] // Parte baja del divisor de la UART0:
-#define  U0IER  DIR_UART0[1] // Registro de Habilitación de interrupciones de la UART0:
-#define  U0DLM  DIR_UART0[1] // Parte Alta del divisor de la UART0:
-#define  U0IIR  DIR_UART0[2] // Registro de Identificación de interrupciones de la UART0:
-#define  U0LCR  DIR_UART0[3] // Line CONTROL Register de la UART0:
-#define  U0LSR  DIR_UART0[5] // Line STATUS Register de la UART0:
-#define  U0FCR  DIR_UART0[8]
-//Macros UART0
-#define  U0DLAB_OFF (U0LCR & 0xEF)
-#define  U0DLAB_ON (U0LCR | 0x80)
-
-
-
-//!<Registros de la UART1:
-#define  U1THR  DIR_U1THR[0]
-#define  U1RBR  DIR_U1RBR[0]
-#define  U1LCR  DIR_U1LCR[0]
-#define  U1LSR  DIR_U1LSR[0]
-#define  U1DLL  DIR_U1DLL[0]
-#define  U1DLM  DIR_U1DLM[0]
-#define  U1IER  DIR_U1IER[0]
-#define  U1IIR  DIR_U1IIR[0]
-#define  U1FCR  DIR_U1FCR[0]
-#define  U1RDR  (U1LSR & 0x01)
-#define  U1THRE  ((U1LSR & 0x20)>>5)
-
-
-
-
-//redefine uiir
-#define  U1IIR  DIR_U1IIR[0]
+#define  UART0 ( ( uart_t  * ) 0x4000C000UL )  // UART0
+#define  UART1 ( ( uart_t  * ) 0x40010000UL )  // UART1
 
 
 

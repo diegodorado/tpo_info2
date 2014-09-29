@@ -8,8 +8,7 @@
 
 #include "keyboard.h"
 #include "fsm.h"
-#include "drivers.h"
-#include <stdio.h>
+
 
 static void keyboard_refresh(void);
 
@@ -121,34 +120,18 @@ static void keyboard_refresh(void){
 #endif  /* USE_SW_WITH_POLLING */
 
 
-static void i_to_str(uint32_t value, char* result){
-  result[2] = '\0';
-  result[1] = '0'+ value%10;
-  value /=10;
-  result[0] = '0'+ value%10;
-}
-
 void keyboard_handle_key(uint8_t key){
-  static char value=0;
-  char result[3];
 
   if(key == 0){
-    printf("key 0 pressed");
-    if(client_data_frame_received()){
-      lcd_print_at("Received",0,0);
-    }else{
-      lcd_print_at("No data yet",0,0);
-    }
+    client_send_data_frame (50,1,0);
   }
   else if(key == 1){
-    client_send_data_frame (10,25,'0' + value,1);
+    client_send_data_frame (50,2,0);
   }
   else if(key == 2){
-    i_to_str(++value,result);
-    lcd_print_at(result,1,0);
+    client_send_data_frame (100,3,0);
   }
   else if(key == 3){
-    i_to_str(--value,result);
-    lcd_print_at(result,1,0);
+    client_send_data_frame (150,4,12);
   }
 }

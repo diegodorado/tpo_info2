@@ -8,38 +8,55 @@
 #include "fw.h"
 #include "drivers.h"
 
+//#include <stdio.h>
+
+
 #ifdef USE_UART0
 
 void UART0_IRQHandler(void){
 
-  uint32_t iir;
+  int x=0; // iir auxiliar, ya que el registro se borra al leerlo
+  uart_iir_t iir; // iir auxiliar, ya que el registro se borra al leerlo
+  static int rx_int_counter = 0;
 
   do
   {
-    iir = U0IIR; // guardo el valor ya que se borra al leerlo
+    x++;
+    iir = UART0->IIR;
 
-    switch((iir & 0x07)>>1) {
+    switch(iir.INT_ID) {
 
-      //001--> Interr por TX
-      case (0x01):
-        if(uart0_rx_data_size()>0)
-          U0THR = uart0_tx_pop();
-        break;
-
-      //010--> Interr por RX
-      case (0x02):
-        uart0_rx_push(U0RBR);
-        break;
-
-      //011--> Interr por LINE STATUS
-      case (0x03):
+      case (UART_INT_ID_RLS):
         //todo: implementar Interr por LINE STATUS
+        //printf("%d RLS INT, tx_size: %d  LSR: %d INT_STATUS: %d\n",x,uart0_tx_data_size(), UART0->LSR, iir.INT_STATUS);
         break;
+
+      case (UART_INT_ID_RDA):
+        while(UART0->LSR.RDR){
+          rx_int_counter++;
+          uart0_rx_push(UART0->RBR);
+          //printf("%d RDA INT ID nro %d  LSR.RDR: %d INT_STATUS: %d\n",x,rx_int_counter, UART0->LSR.RDR, iir.INT_STATUS);
+        }
+        break;
+
+      case (UART_INT_ID_CTI):
+        while(UART0->LSR.RDR){
+          uart0_rx_push(UART0->RBR);
+          //printf("%d CTI INT ID nro %d  LSR.RDR: %d INT_STATUS: %d\n",x,rx_int_counter, UART0->LSR.RDR, iir.INT_STATUS);
+        }
+        break;
+
+      case (UART_INT_ID_THRE):
+        //printf("%d THRE INT, tx_size: %d  LSR.RDR: %d INT_STATUS: %d\n",x,uart0_tx_data_size(), UART0->LSR.RDR, iir.INT_STATUS);
+        if(uart0_tx_data_size()>0)
+          UART0->THR = uart0_tx_pop();
+        break;
+
 
     }
 
 
-  } while( ! ( iir & 0x01 ) ); // continuar mientras haya interrupciones pendientes
+  } while( ! iir.INT_STATUS ); // continuar mientras haya interrupciones pendientes
 
 
 }
@@ -49,34 +66,48 @@ void UART0_IRQHandler(void){
 
 void UART1_IRQHandler(void){
 
-  uint32_t iir;
+  int x=0; // iir auxiliar, ya que el registro se borra al leerlo
+  uart_iir_t iir; // iir auxiliar, ya que el registro se borra al leerlo
+  static int rx_int_counter = 0;
 
   do
   {
-    iir = U1IIR; // guardo el valor ya que se borra al leerlo
+    x++;
+    iir = UART1->IIR;
 
-    switch((iir & 0x07)>>1) {
+    switch(iir.INT_ID) {
 
-      //001--> Interr por TX
-      case (0x01):
-        if(uart1_rx_data_size()>0)
-          U1THR = uart1_tx_pop();
-        break;
-
-      //010--> Interr por RX
-      case (0x02):
-        uart1_rx_push(U1RBR);
-        break;
-
-      //011--> Interr por LINE STATUS
-      case (0x03):
+      case (UART_INT_ID_RLS):
         //todo: implementar Interr por LINE STATUS
+        printf("%d RLS INT, tx_size: %d  LSR: %d INT_STATUS: %d\n",x,uart1_tx_data_size(), UART1->LSR, iir.INT_STATUS);
         break;
+
+      case (UART_INT_ID_RDA):
+        while(UART1->LSR.RDR){
+          rx_int_counter++;
+          uart1_rx_push(UART1->RBR);
+          printf("%d RDA INT ID nro %d  LSR.RDR: %d INT_STATUS: %d\n",x,rx_int_counter, UART1->LSR.RDR, iir.INT_STATUS);
+        }
+        break;
+
+      case (UART_INT_ID_CTI):
+        while(UART1->LSR.RDR){
+          uart1_rx_push(UART1->RBR);
+          printf("%d CTI INT ID nro %d  LSR.RDR: %d INT_STATUS: %d\n",x,rx_int_counter, UART1->LSR.RDR, iir.INT_STATUS);
+        }
+        break;
+
+      case (UART_INT_ID_THRE):
+        printf("%d THRE INT, tx_size: %d  LSR.RDR: %d INT_STATUS: %d\n",x,uart1_tx_data_size(), UART1->LSR.RDR, iir.INT_STATUS);
+        if(uart1_tx_data_size()>0)
+          UART1->THR = uart1_tx_pop();
+        break;
+
 
     }
 
 
-  } while( ! ( iir & 0x01 ) ); // continuar mientras haya interrupciones pendientes
+  } while( ! iir.INT_STATUS ); // continuar mientras haya interrupciones pendientes
 
 
 }

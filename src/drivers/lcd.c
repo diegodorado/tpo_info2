@@ -13,7 +13,7 @@ static void delay(uint32_t);
 static char text_buffer[32]; //holds the representation of lcd text
 static uint32_t dirty_mask = 0x00; //holds wich char needs to be drawed
 static char must_clear = 0; //if set to 1 will clear lcd on lcd_refresh call
-static char cursor = 0; //holds cursor index, to see if there is need of setting cursor before write
+static uint8_t cursor = 0; //holds cursor index, to see if there is need of setting cursor before write
 
 //definicion de funciones publicas
 
@@ -84,18 +84,25 @@ void lcd_clear()
 }
 
 
+void lcd_print_char(char c)
+{
+  if(text_buffer[cursor]!=c)
+    dirty_mask |= (0x01<<cursor); //marca ese char como dirty
+  text_buffer[cursor++]=c;
+}
+
+
 void lcd_print(char *str)
 {
-  int i;
   //from cursor trhough size of buffer or end of string
-  for(i=cursor;(i<32) && *str!='\0';i++){
-    if(text_buffer[i]!=*str){
-      text_buffer[i]=*str;
-      dirty_mask |= (0x01<<i); //marca ese char como dirty
-    }
-    *str++;
-    cursor++;
-  }
+  for(;(cursor<32) && *str!='\0';)
+    lcd_print_char(*str++);
+}
+
+void lcd_print_char_at(char c,uint8_t row,uint8_t col)
+{
+  cursor = row * 16 + col;
+  lcd_print_char(c);
 }
 
 void lcd_print_at(char *str,uint8_t row,uint8_t col)
@@ -108,12 +115,16 @@ void lcd_print_at(char *str,uint8_t row,uint8_t col)
 //solo donde sea necesario
 void lcd_refresh(void){
 
-  char i;
+  uint8_t i;
 
   // clears takes precedence
   if (must_clear){
     must_clear = 0;
     command(LCD_CLEARDISPLAY);  // clear display, set cursor position to zero
+    cursor = 0;
+    for (i=0; i<32;i++)
+      text_buffer[i] = 0;
+
     delay(2000);  // this command takes a long time!
     return;
   }

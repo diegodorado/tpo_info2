@@ -5,7 +5,6 @@
 // en una misma tabla de punteros a funcion
 
 #include "fsm_main.h"
-#include "fw.h"
 
 
 static fsm_main_state_t state = FSM_MAIN_STATE_IDLE; // estado inicial
@@ -25,12 +24,23 @@ static void write_update( void);
 static void write_exit( void);
 
 
+static void receiving_enter( void);
+static void receiving_update( void);
+static void receiving_exit( void);
+
+static void error_enter( void);
+static void error_update( void);
+static void error_exit( void);
+
+
 // definicion de la tabla de punteros a funcion
 // que debe corresponderse con fsm_main_state_t
 void (* const state_table[][3])(void) = {
   {idle_enter    , idle_update    , idle_exit},
   {playback_enter, playback_update, playback_exit},
-  {write_enter   , write_update   , write_exit}
+  {write_enter   , write_update   , write_exit},
+  {receiving_enter   , receiving_update   , receiving_exit},
+  {error_enter   , error_update   , error_exit},
 };
 
 
@@ -43,13 +53,15 @@ void fsm_main_update(void)
 }
 
 
-void fsm_main_start(){
+void fsm_main_start()
+{
   //ejecuta el on enter del estado inicial
   (*state_table[ state ][ON_ENTER])();
 }
 
 
-void fsm_main_change(fsm_main_state_t st){
+void fsm_main_change(fsm_main_state_t st)
+{
   if(st==state) return; //no es un cambio de estado
 
   // ejecutar on_exit.
@@ -67,69 +79,110 @@ void fsm_main_change(fsm_main_state_t st){
 
 // implementacion de las funciones de los estados
 
-static volatile uint32_t seconds = 0;
 
-void update_lcd_timer(void){
-  char str_clck[] = "00:00";
 
-  int aux = seconds++;
 
-  str_clck[4] = '0' + (aux%10);  aux /=10;
-  str_clck[3] = '0' + (aux%6) ;  aux /=6;
-  str_clck[1] = '0' + (aux%10);  aux /=10;
-  str_clck[0] = '0' + (aux%6) ;
 
-  lcd_print_at(str_clck, 1,11);
 
+static void playback_enter( void)
+{
 }
 
-static void idle_enter( void){
-  // estado de reposo...
-  // se puede usar este estado para tests
-  //audio_test();
-  lcd_clear();
-  ///lcd_print("IDLE STATE");
-
-  systick_delay_async(1000, 1,update_lcd_timer);
-
-
-}
-
-static void idle_update( void){
-  // estado de reposo...
-  // no tiene submaquina
-
-}
-
-static void idle_exit( void){
-
-}
-
-
-static void playback_enter( void){
-  uart1_tx_push(0x40);
-}
-
-static void playback_update( void){
+static void playback_update( void)
+{
   // se llama a la submaquina fsm_playback
   //fsm_playback();
 }
 
-static void playback_exit( void){
+static void playback_exit( void)
+{
 
 }
 
 
-static void write_enter( void){
+static void write_enter( void)
+{
   lcd_print_at("WRITE STATE",0,0);
 }
 
-static void write_update( void){
+static void write_update( void)
+{
   // se llama a la submaquina fsm_write
   //fsm_write();
 
 }
 
-static void write_exit( void){
+static void write_exit( void)
+{
 
+}
+
+
+
+static void idle_enter( void)
+{
+  //lcd_print_at("IDLE STATE",0,0);
+}
+
+static void idle_update( void)
+{
+  //if data frame available, receive it!
+  if(client_data_frame_received())
+    fsm_main_change(FSM_MAIN_STATE_RECEIVING);
+
+}
+
+static void idle_exit( void)
+{
+
+}
+
+
+static void receiving_enter( void)
+{
+  tp4_data_frame_t data;
+
+  lcd_print_at("RX: ",0,0);
+  data = client_decode_data_frame();
+
+  if (client_is_checksum_ok(data)){
+    //lcd_clear();
+    lcd_print_char(data.event + '0');
+    lcd_print(" @ (");
+    lcd_print_char(data.minutes / 10 + '0');
+    lcd_print_char(data.minutes % 10 + '0');
+    lcd_print_char(':');
+    lcd_print_char(data.seconds / 10 + '0');
+    lcd_print_char(data.seconds % 10 + '0');
+    lcd_print_char(')');
+    fsm_main_change(FSM_MAIN_STATE_IDLE);
+  }else{
+    fsm_main_change(FSM_MAIN_STATE_ERROR);
+  }
+
+}
+
+static void receiving_update( void)
+{
+}
+
+static void receiving_exit( void)
+{
+
+}
+
+
+static void error_enter( void)
+{
+  lcd_print_at("CHKSUM ERROR",0,0);
+  lcd_print_at("RESTART DEVICE...",1,0);
+  while(1){}; //app is hung
+}
+
+static void error_update( void)
+{
+}
+
+static void error_exit( void)
+{
 }

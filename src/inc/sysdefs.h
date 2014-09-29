@@ -17,16 +17,16 @@ typedef 	__RW uint32_t 		register_t;  //!< defino un tipo 'registro'.
 
 //UART
 //uncomment to use uart0 or comment to use uart1
-//#define USE_UART0
-#define USE_UART1
+#define USE_UART0
+//#define USE_UART1
 
 //KEYBOARD
-#define USE_SW1_WITH_INTERRUPTS
-#define USE_SW4_WITH_INTERRUPTS
-//#define USE_SW1_WITH_POLLING
+//#define USE_SW1_WITH_INTERRUPTS
+//#define USE_SW4_WITH_INTERRUPTS
+#define USE_SW1_WITH_POLLING
 #define USE_SW2_WITH_POLLING
 #define USE_SW3_WITH_POLLING
-//#define USE_SW4_WITH_POLLING
+#define USE_SW4_WITH_POLLING
 
 
 #define USE_SW_WITH_POLLING defined(USE_SW1_WITH_POLLING) || defined(USE_SW2_WITH_POLLING) || defined(USE_SW3_WITH_POLLING) || defined(USE_SW4_WITH_POLLING)
