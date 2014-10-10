@@ -21,7 +21,7 @@ void (* callbacks_queue[CALLBACKS_QUEUE_SIZE])(void);
 
 
 void systick_setup(void){
-  STRELOAD  =  STCALIB-1;   // configurado para interrumpir cada 10 ms
+  STRELOAD  =  (STCALIB/1)-1;   // configurado para interrumpir cada 10 ms
   STCURR = 0;
   ENABLE = 1;
   TICKINT = 1;
