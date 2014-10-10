@@ -43,7 +43,8 @@ void lcd_setup(void)
   gpio_set_dir(LCD_PINE, 1);
 
 
-  delay(50000);
+  delay(5000);//tener en cuenta q es por 10ms
+
   // Now we pull both RS and R/W low to begin commands
   gpio_set_pin(LCD_PINRS, LCD_LOW);
   gpio_set_pin(LCD_PINE, LCD_LOW);
@@ -150,8 +151,13 @@ void lcd_refresh(void){
 static void delay(uint32_t ms)
 {
   uint32_t i,j;
-  for(i=0;i<ms*1000;i++)
-    j++;
+ // for(i=0;i<ms*1000;i++)
+
+  while(ms--){
+	   i=1000;
+	  	  while(i--);
+  	  }
+    //j++;
 
 }
 
