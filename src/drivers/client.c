@@ -97,13 +97,8 @@ tp4_data_frame_t client_decode_data_frame(void)
 
   //uso de punteros para serializar la estructura
   // y aritmetica de punteros para recorrerla
-  for(; data_ptr - (uint8_t*)&data < sizeof(data); ){
-#ifdef USE_UART0
-    *data_ptr++ = uart0_rx_pop();
-#else
-    *data_ptr++ = uart1_rx_pop();
-#endif
-  }
+  for(; data_ptr - (uint8_t*)&data < sizeof(data); )
+    *data_ptr++ = client_rx_pop();
 
   return data;
 }
