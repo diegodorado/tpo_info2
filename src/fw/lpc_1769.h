@@ -271,8 +271,52 @@ typedef struct
 /*
  * Fin de UART
  **/
+/*
+#define     __I     volatile const
+#define     __O     volatile
+#define     __IO    volatile
+
+typedef struct
+{
+  __IO uint32_t FLASHCFG;               //Flash Accelerator Module
+       uint32_t RESERVED0[31];
+  __IO uint32_t PLL0CON;                //Clocking and Power Control
+  __IO uint32_t PLL0CFG;
+  __I  uint32_t PLL0STAT;
+  __O  uint32_t PLL0FEED;
+       uint32_t RESERVED1[4];
+  __IO uint32_t PLL1CON;
+  __IO uint32_t PLL1CFG;
+  __I  uint32_t PLL1STAT;
+  __O  uint32_t PLL1FEED;
+       uint32_t RESERVED2[4];
+  __IO uint32_t PCON;
+  __IO uint32_t PCONP;
+       uint32_t RESERVED3[15];
+  __IO uint32_t CCLKCFG;
+  __IO uint32_t USBCLKCFG;
+  __IO uint32_t CLKSRCSEL;
+  __IO uint32_t	CANSLEEPCLR;
+  __IO uint32_t	CANWAKEFLAGS;
+       uint32_t RESERVED4[10];
+  __IO uint32_t EXTINT;                 // External Interrupts
+       uint32_t RESERVED5;
+  __IO uint32_t EXTMODE;
+  __IO uint32_t EXTPOLAR;
+       uint32_t RESERVED6[12];
+  __IO uint32_t RSID;                   //Reset
+       uint32_t RESERVED7[7];
+  __IO uint32_t SCS;                    // Syscon Miscellaneous Registers
+  __IO uint32_t IRCTRIM;                // Clock Dividers
+  __IO uint32_t PCLKSEL0;
+  __IO uint32_t PCLKSEL1;
+       uint32_t RESERVED8[4];
+  __IO uint32_t USBIntSt;               // USB Device/OTG Interrupt Register
+  __IO uint32_t DMAREQSEL;
+  __IO uint32_t CLKOUTCFG;              // Clock Output Configuration
+ } LPC_SC_TypeDef;
 
 
-
-
+#define LPC_SC                ((LPC_SC_TypeDef  *) 0x40080000UL+0x7C000)
+*/
 #endif /* REGS_H_ */
