@@ -114,7 +114,7 @@ void client_setup(void)
 #endif
 
   lcd_clear();
-  systick_delay_async(1000, 1,update_lcd_timer);
+  //systick_delay_async(1000, 1,update_lcd_timer);
 
 }
 

@@ -11,6 +11,7 @@
 //include all firmware
 #include "../fw/lpc_1769.h"
 #include "../fw/clock.h"
+#include "../fw/timers.h"
 #include "../fw/dac.h"
 #include "../fw/periph.h"
 #include "../fw/uart.h"

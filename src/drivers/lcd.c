@@ -150,15 +150,11 @@ void lcd_refresh(void){
 //definicion de funciones privadas
 static void delay(uint32_t ms)
 {
-  uint32_t i,j;
- // for(i=0;i<ms*1000;i++)
-
+  uint32_t i;
   while(ms--){
 	   i=1000;
 	  	  while(i--);
   	  }
-    //j++;
-
 }
 
 

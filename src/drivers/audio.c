@@ -16,7 +16,8 @@ for(x=0;x<t*1000;x++);
 }
 
 void audio_setup(void){
-  dac_init();
+  dac_setup();
+  timer0_setup();
 }
 
 void audio_test(void){
