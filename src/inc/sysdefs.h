@@ -12,7 +12,7 @@ typedef 	__RW uint32_t 		register_t;  //!< defino un tipo 'registro'.
 
 
 /*
- * SYSTEM CONFIGURATION...
+ * SYSTEM CONFIGURATION
  * */
 
 //#define DEBUG_ON
