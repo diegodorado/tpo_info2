@@ -21,11 +21,11 @@ void (* callbacks_queue[CALLBACKS_QUEUE_SIZE])(void);
 
 
 void systick_setup(void){
-  STRELOAD  =  (STCALIB/1)-1;   // configurado para interrumpir cada 10 ms
-  STCURR = 0;
-  ENABLE = 1;
-  TICKINT = 1;
-  CLKSOURCE = 1;
+  SYSTICK->STRELOAD  =  (SYSTICK->STCALIB/1)-1;   // configurado para interrumpir cada 10 ms
+  SYSTICK->STCURR = 0;
+  SYSTICK->ENABLE = 1;
+  SYSTICK->TICKINT = 1;
+  SYSTICK->CLKSOURCE = 1;
 }
 
 // llamada por isr_systick.c
@@ -103,3 +103,20 @@ void systick_delay_async(uint32_t millis, char is_periodic, void (*callback)( vo
 
 
 }
+
+
+
+// detach delay asincronico, para quitar un callback de la cola
+void systick_detach_delay_async(void (*callback)( void)){
+  int i;
+
+  for (i=0; i< CALLBACKS_QUEUE_SIZE; i++){
+    if(callbacks_queue[i] == callback){
+      callbacks_enabled_mask &= ~(0x01<<i); //deshabilito el callback
+      callbacks_available_mask |= (0x01<<i); //dejo habilitado para otro callback
+      return; // termino la ejecucion
+    }
+  }
+
+}
+

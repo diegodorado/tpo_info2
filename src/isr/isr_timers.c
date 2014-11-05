@@ -6,11 +6,14 @@
  */
 
 //todo: utilizar el minimo de timers que sea posible
+#include "drivers.h"
 
 void TIMER0_IRQHandler(void){
-  //todo: implementar interrupcion
-  while(1);
-
+  if ( TIMER0->IR_MR0 )
+  {
+    TIMER0->IR_MR0 = 1;  /* Writing a HIGH clears the interrupt flag */
+    timer0_mr0_interrupt();
+  }
 }
 
 void TIMER1_IRQHandler(void){

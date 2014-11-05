@@ -15,10 +15,12 @@ typedef 	__RW uint32_t 		register_t;  //!< defino un tipo 'registro'.
  * SYSTEM CONFIGURATION
  * */
 
+//#define DEBUG_ON
+
 //UART
 //uncomment to use uart0 or comment to use uart1
-#define USE_UART0
-//#define USE_UART1
+//#define USE_UART0
+#define USE_UART1
 
 //KEYBOARD
 //#define USE_SW1_WITH_INTERRUPTS

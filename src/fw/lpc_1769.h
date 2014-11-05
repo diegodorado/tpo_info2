@@ -15,51 +15,8 @@ RegsLPC1769
 #define		GPIO			  ( ( register_t  * ) 0x2009C000UL )		// Direccion de inicio de los registros de GPIOs
 
 
-#define		TIMER0			( ( register_t  * ) 0x40004000UL )
-
-#define		T0IR			TIMER0[ 0 ]			/** IR - INTERRUPT REGISTER */
-	#define		IRMR0		0
-	#define		IRMR1		1
-	#define		IRMR2		2
-	#define		IRMR3		3
-	#define		IRCR0		4
-	#define		IRCR1		5
-#define		T0TCR			TIMER0[ 1 ]			/** TCR - TIMER CONTROL REGISTER */
-	#define		CE			0
-	#define		CR			1
-#define		T0TC			TIMER0[ 2 ]			/** TC - TIMER COUNTER REGISTER */
-#define		T0PR			TIMER0[ 3 ]			/** PR - PRESCALE REGISTER */
-#define		T0PC			TIMER0[ 4 ]			/** PC - PRESCALE COUNTER REGISTER */
-#define		T0MCR			TIMER0[ 5 ]			/** MCR - MATCH CONTROL REGISTER */
-	#define		MR0I			0
-	#define		MR0R			1
-	#define		MR0S			2
-	#define		MR1I			3
-	#define		MR1R			4
-	#define		MR1S			5
-	#define		MR2I			6
-	#define		MR2R			7
-	#define		MR2S			8
-	#define		MR3I			9
-	#define		MR3R			10
-	#define		MR3S			11
-#define		T0MR0			TIMER0[ 6 ]			/** MR - MATCH CONTROL REGISTER */
-#define		T0MR1			TIMER0[ 7 ]
-#define		T0MR2			TIMER0[ 8 ]
-#define		T0MR3			TIMER0[ 9 ]
-#define		T0CCR			TIMER0[ 10 ]
-#define		T0CR0			TIMER0[ 11 ]
-#define		T0CR1			TIMER0[ 12 ]
-//los siguientes dos registros NO estan contigüos. Por ende no se continúa con
-//el offset
-#define		T0EMR			( * ( ( register_t  * ) 0x4000403CUL ) )
-#define		T0CTCR			( * ( ( register_t  * ) 0x40004070UL ) )/** CTCR - COUNT CONTROL REGISTER */
-	#define		TCM			0
-	#define		CIS			2
-
 
 // NVIC ----------------------------------------------------------------------------------------------
-#define		NVIC_TIMER0		1
 // Nested Vectored Interrupt Controller (NVIC)
 // 0xE000E100UL : Direccion de inicio de los registros de habilitación (set) de interrupciones en el NVIC:
 #define		ISER		( ( register_t  * ) 0xE000E100UL )
@@ -69,12 +26,6 @@ RegsLPC1769
 // Registros ISER:
 #define		ISER0		ISER[0]
 #define		ISER1		ISER[1]
-
-#define  ISE_EINT3 ISER[0] |= (0x00000001 << 21)  //ISER0->bit21 pongo un 1 en el bit 21 para habilitar la INT EINT3
-#define  ISE_EINT2 ISER[0] |= (0x00000001 << 20)  //ISER0->bit20 pongo un 1 en el bit 20 para habilitar la INT EINT2
-#define  ISE_EINT1 ISER[0] |= (0x00000001 << 19)  //ISER0->bit19 pongo un 1 en el bit 19 para habilitar la INT EINT1
-#define  ISE_EINT0 ISER[0] |= (0x00000001 << 18)  //ISER0->bit18 pongo un 1 en el bit 18 para habilitar la INT EINT0
-
 
 // Registros ICER:
 #define		ICER0		ICER[0]
@@ -160,6 +111,83 @@ RegsLPC1769
 
 
 
+
+
+/*
+ * Inicio de Timers
+ * */
+
+// Table 425. TIMER/COUNTER0-3 register map
+typedef struct
+{
+  union{
+    __RW uint32_t IR;                // Interrupt Register
+    struct{
+      // Table 426. Interrupt Register
+      __RW uint32_t IR_MR0:1;    // Interrupt Interrupt flag for match channel 0. 0
+      __RW uint32_t IR_MR1:1;    // Interrupt flag for match channel 1. 0
+      __RW uint32_t IR_MR2:1;    // Interrupt flag for match channel 2. 0
+      __RW uint32_t IR_MR3:1;    // Interrupt flag for match channel 3. 0
+      __RW uint32_t IR_CR0:1;    // Interrupt flag for capture channel 0 event. 0
+      __RW uint32_t IR_CR1:1;    // Interrupt flag for capture channel 1 event. 0
+    };
+  };
+  union{
+    __RW uint32_t TCR;               // Timer Control Register
+    struct{
+      // Table 427. Timer Control Register
+      __RW uint32_t TCR_ENABLED:1;    // Counter Enable
+      __RW uint32_t TCR_RESET:1;    //  Counter Reset
+    };
+  };
+
+  __RW uint32_t TC;                // Timer Counter
+  __RW uint32_t PR;                // Prescale Register
+  __RW uint32_t PC;                // Prescale Counter
+
+  union{
+    __RW uint32_t MCR;               // Match Control Register
+    struct{
+      // Table 429. Match Control Register
+      __RW uint32_t MCR_MR0I:1;     // Interrupt on MR0
+      __RW uint32_t MCR_MR0R:1;     //  Reset on MR0
+      __RW uint32_t MCR_MR0S:1;     //  Stop on MR0
+      __RW uint32_t MCR_MR1I:1;     // Interrupt on MR1
+      __RW uint32_t MCR_MR1R:1;     //  Reset on MR1
+      __RW uint32_t MCR_MR1S:1;     //  Stop on MR1
+      __RW uint32_t MCR_MR2I:1;     // Interrupt on MR2
+      __RW uint32_t MCR_MR2R:1;     //  Reset on MR2
+      __RW uint32_t MCR_MR2S:1;     //  Stop on MR2
+      __RW uint32_t MCR_MR3I:1;     // Interrupt on MR3
+      __RW uint32_t MCR_MR3R:1;     //  Reset on MR3
+      __RW uint32_t MCR_MR3S:1;     //  Stop on MR3
+    };
+  };
+
+  __RW uint32_t MR0;               // Match Register 0
+  __RW uint32_t MR1;               // Match Register 1
+  __RW uint32_t MR2;               // Match Register 2
+  __RW uint32_t MR3;               // Match Register 3
+  __RW uint32_t CCR;               // Capture Control Register
+  __RW uint32_t CR0;               // Capture Register 0
+  __RW uint32_t CR1;               // Capture Register 1
+  __RW uint32_t RESERVED0[2];
+  __RW uint32_t EMR;               // External Match Register
+  __RW uint32_t RESERVED1[12];
+  __RW uint32_t CTCR;              // Count Control Register
+} timer_t;
+
+
+#define  TIMER0 ( ( timer_t  * ) 0x40004000UL )
+
+
+/*
+ * Fin de Timers
+ * */
+
+
+
+
 /*
  * Inicio de Systick
  * */
@@ -168,33 +196,24 @@ typedef struct
 {
  union
  {
-  __RW uint32_t  _STCTRL ;                         /*!< Offset: 0x00  SysTick Control and Status Register */
+  __RW uint32_t  STCTRL ;                         /*!< Offset: 0x00  SysTick Control and Status Register */
   struct
   {
-   __RW uint32_t _ENABLE:1;
-   __RW uint32_t _TICKINT:1;
-   __RW uint32_t _CLKSOURCE:1;
-   __RW uint32_t _RESERVED0:14;
-   __RW uint32_t _COUNTFLAG:1;
-   __RW uint32_t _RESERVED1:14;
+   __RW uint32_t ENABLE:1;
+   __RW uint32_t TICKINT:1;
+   __RW uint32_t CLKSOURCE:1;
+   __RW uint32_t RESERVED0:14;
+   __RW uint32_t COUNTFLAG:1;
+   __RW uint32_t RESERVED1:14;
   };
  };
- __RW uint32_t _STRELOAD;                   /*!< Offset: 0x04  SysTick Reload Value Register       */
- __RW uint32_t _STCURR ;                    /*!< Offset: 0x08  SysTick Current Value Register      */
- __R  uint32_t _STCALIB ;                   /*!< Offset: 0x0C  SysTick Calibration Register        */
+ __RW uint32_t STRELOAD;                   /*!< Offset: 0x04  SysTick Reload Value Register       */
+ __RW uint32_t STCURR ;                    /*!< Offset: 0x08  SysTick Current Value Register      */
+ __R  uint32_t STCALIB ;                   /*!< Offset: 0x0C  SysTick Calibration Register        */
 } systick_t;
 
 #define SYSTICK   ((systick_t *) 0xE000E010UL)
 
-#define MAX_TICKS 0x00fffffful
-#define STCTRL  SYSTICK->_STCTRL
- #define ENABLE  SYSTICK->_ENABLE
- #define TICKINT  SYSTICK->_TICKINT
- #define CLKSOURCE SYSTICK->_CLKSOURCE
- #define COUNTFLAG SYSTICK->_COUNTFLAG
-#define STRELOAD SYSTICK->_STRELOAD
-#define STCURR      SYSTICK->_STCURR
-#define STCALIB  SYSTICK->_STCALIB
 
 /*
  * Fin de Systick
@@ -272,51 +291,99 @@ typedef struct
  * Fin de UART
  **/
 /*
-#define     __I     volatile const
-#define     __O     volatile
-#define     __IO    volatile
+#define     __R     volatile const
+#define     __W     volatile
+#define     __RW    volatile
+
+
+
+/*
+ * Inicio de DAC
+ **/
+
+
+/*Table 538. DAC registers*/
+typedef struct
+{
+ union
+ {
+  /* D/A Converter Register. This register contains the digital value to be R/W 0 converted to analog and a power control bit. */
+  __RW uint32_t DACR;
+
+  /* Table 539: D/A Converter Register (DACR - address 0x4008 C000) bit description */
+
+  struct
+  {
+   /* Reserved, user software should not write ones to reserved bits. The value read from a NA reserved bit is not defined. */
+   __R uint32_t RESERVED0:6;
+   //After the selected settling time after this field is written with a new VALUE, the voltage on 0 the AOUT pin (with respect to VSSA) is VALUE × ((VREFP - VREFN)/1024) + VREFN.
+   __RW  uint32_t VALUE:10;
+   //The settling time of the DAC is 1 μs max, and the maximum current is 700 μA. This allows 0 a maximum update rate of 1 MHz.
+   //The settling time of the DAC is 2.5 μs and the maximum current is 350 μA. This allows a maximum update rate of 400 kHz.
+   __RW uint32_t BIAS:1;
+   //Reserved, user software should not write ones to reserved bits. The value read from a NA reserved bit is not defined.
+   __R uint32_t RESERVED1:15;
+
+  };
+ };
+ //DAC Control register. This register controls DMA and timer operation. R/W 0
+ __RW uint32_t DACCTRL;
+ //DAC Counter Value register. This register contains the reload value for R/W 0 the DAC DMA/Interrupt timer.
+ __RW uint32_t DACCNTVAL;
+} dac_t;
+
+
+#define DAC ((dac_t *) 0x4008C000UL)
+
+
+
+/*
+ * Fin de DAC
+ **/
+
+
 
 typedef struct
 {
-  __IO uint32_t FLASHCFG;               //Flash Accelerator Module
+  __RW uint32_t FLASHCFG;               //Flash Accelerator Module
        uint32_t RESERVED0[31];
-  __IO uint32_t PLL0CON;                //Clocking and Power Control
-  __IO uint32_t PLL0CFG;
-  __I  uint32_t PLL0STAT;
-  __O  uint32_t PLL0FEED;
+  __RW uint32_t PLL0CON;                //Clocking and Power Control
+  __RW uint32_t PLL0CFG;
+  __R  uint32_t PLL0STAT;
+  __W  uint32_t PLL0FEED;
        uint32_t RESERVED1[4];
-  __IO uint32_t PLL1CON;
-  __IO uint32_t PLL1CFG;
-  __I  uint32_t PLL1STAT;
-  __O  uint32_t PLL1FEED;
+  __RW uint32_t PLL1CON;
+  __RW uint32_t PLL1CFG;
+  __R  uint32_t PLL1STAT;
+  __W  uint32_t PLL1FEED;
        uint32_t RESERVED2[4];
-  __IO uint32_t PCON;
-  __IO uint32_t PCONP;
+  __RW uint32_t PCON;
+  __RW uint32_t _PCONP;
        uint32_t RESERVED3[15];
-  __IO uint32_t CCLKCFG;
-  __IO uint32_t USBCLKCFG;
-  __IO uint32_t CLKSRCSEL;
-  __IO uint32_t	CANSLEEPCLR;
-  __IO uint32_t	CANWAKEFLAGS;
+  __RW uint32_t CCLKCFG;
+  __RW uint32_t USBCLKCFG;
+  __RW uint32_t CLKSRCSEL;
+  __RW uint32_t	CANSLEEPCLR;
+  __RW uint32_t	CANWAKEFLAGS;
        uint32_t RESERVED4[10];
-  __IO uint32_t EXTINT;                 // External Interrupts
+  __RW uint32_t _EXTINT;                 // External Interrupts
        uint32_t RESERVED5;
-  __IO uint32_t EXTMODE;
-  __IO uint32_t EXTPOLAR;
+  __RW uint32_t _EXTMODE;
+  __RW uint32_t _EXTPOLAR;
        uint32_t RESERVED6[12];
-  __IO uint32_t RSID;                   //Reset
+  __RW uint32_t RSID;                   //Reset
        uint32_t RESERVED7[7];
-  __IO uint32_t SCS;                    // Syscon Miscellaneous Registers
-  __IO uint32_t IRCTRIM;                // Clock Dividers
-  __IO uint32_t PCLKSEL0;
-  __IO uint32_t PCLKSEL1;
+  __RW uint32_t SCS;                    // Syscon Miscellaneous Registers
+  __RW uint32_t IRCTRIM;                // Clock Dividers
+  __RW uint32_t _PCLKSEL0;
+  __RW uint32_t _PCLKSEL1;
        uint32_t RESERVED8[4];
-  __IO uint32_t USBIntSt;               // USB Device/OTG Interrupt Register
-  __IO uint32_t DMAREQSEL;
-  __IO uint32_t CLKOUTCFG;              // Clock Output Configuration
+  __RW uint32_t USBIntSt;               // USB Device/OTG Interrupt Register
+  __RW uint32_t DMAREQSEL;
+  __RW uint32_t CLKOUTCFG;              // Clock Output Configuration
  } LPC_SC_TypeDef;
 
 
 #define LPC_SC                ((LPC_SC_TypeDef  *) 0x40080000UL+0x7C000)
-*/
+
 #endif /* REGS_H_ */

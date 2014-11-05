@@ -5,10 +5,7 @@
  *      Author: diego
  */
 
-#include "fw.h"
 #include "drivers.h"
-
-//#include <stdio.h>
 
 
 #ifdef USE_UART0
@@ -79,26 +76,34 @@ void UART1_IRQHandler(void){
 
       case (UART_INT_ID_RLS):
         //todo: implementar Interr por LINE STATUS
+#ifdef DEBUG_ON
         printf("%d RLS INT, tx_size: %d  LSR: %d INT_STATUS: %d\n",x,uart1_tx_data_size(), UART1->LSR, iir.INT_STATUS);
+#endif
         break;
 
       case (UART_INT_ID_RDA):
         while(UART1->LSR.RDR){
           rx_int_counter++;
           uart1_rx_push(UART1->RBR);
+#ifdef DEBUG_ON
           printf("%d RDA INT ID nro %d  LSR.RDR: %d INT_STATUS: %d\n",x,rx_int_counter, UART1->LSR.RDR, iir.INT_STATUS);
+#endif
         }
         break;
 
       case (UART_INT_ID_CTI):
         while(UART1->LSR.RDR){
           uart1_rx_push(UART1->RBR);
+#ifdef DEBUG_ON
           printf("%d CTI INT ID nro %d  LSR.RDR: %d INT_STATUS: %d\n",x,rx_int_counter, UART1->LSR.RDR, iir.INT_STATUS);
+#endif
         }
         break;
 
       case (UART_INT_ID_THRE):
+#ifdef DEBUG_ON
         printf("%d THRE INT, tx_size: %d  LSR.RDR: %d INT_STATUS: %d\n",x,uart1_tx_data_size(), UART1->LSR.RDR, iir.INT_STATUS);
+#endif
         if(uart1_tx_data_size()>0)
           UART1->THR = uart1_tx_pop();
         break;
