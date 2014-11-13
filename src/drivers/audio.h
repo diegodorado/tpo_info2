@@ -13,7 +13,4 @@
 
 void audio_setup(void);
 
-void audio_test(void);
-
-
 #endif /* AUDIO_H_ */

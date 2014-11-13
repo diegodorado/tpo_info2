@@ -8,18 +8,22 @@ static void send(uint8_t, uint8_t);
 static void pulse_enable(void);
 static void write_4_bits(uint8_t);
 static void delay(uint32_t);
+static void lcd_do_clear(void);
 
 
-static char text_buffer[32]; //holds the representation of lcd text
-static uint32_t dirty_mask = 0x00; //holds wich char needs to be drawed
-static char must_clear = 0; //if set to 1 will clear lcd on lcd_refresh call
-static uint8_t cursor = 0; //holds cursor index, to see if there is need of setting cursor before write
+static volatile char text_buffer[32]; //holds the representation of lcd text
+static volatile uint32_t dirty_mask = 0x00; //holds wich char needs to be drawed
+static volatile char must_clear = 0; //if set to 1 will clear lcd on lcd_refresh call
+static volatile uint8_t cursor = 0; //holds cursor index, to see if there is need of setting cursor before write
 
 //definicion de funciones publicas
 
 
 void lcd_setup(void)
 {
+
+  timer1_setup();
+
   // When the display powers up, it is configured as follows:
   //
   // 1. Display clear
@@ -43,7 +47,7 @@ void lcd_setup(void)
   gpio_set_dir(LCD_PINE, 1);
 
 
-  delay(5000);//tener en cuenta q es por 10ms
+  delay(20); //20ms de startup
 
   // Now we pull both RS and R/W low to begin commands
   gpio_set_pin(LCD_PINRS, LCD_LOW);
@@ -51,15 +55,15 @@ void lcd_setup(void)
 
   // we start in 8bit mode, try to set 4 bit mode
   write_4_bits(0x03);
-  delay(4500); // wait min 4.1ms
+  delay(5); // wait min 4.1ms
 
   // second try
   write_4_bits(0x03);
-  delay(4500); // wait min 4.1ms
+  delay(5); // wait min 4.1ms
 
   // third go!
   write_4_bits(0x03);
-  delay(150);
+  delay(1);
 
   // finally, set to 8-bit interface
   write_4_bits(0x02);
@@ -71,7 +75,7 @@ void lcd_setup(void)
   command(LCD_DISPLAYCONTROL | LCD_DISPLAYON | LCD_CURSOROFF | LCD_BLINKOFF);
 
   // clear it off
-  lcd_clear();
+  lcd_do_clear();
 
   // Initialize to default text direction (for romance languages)
   // set the entry mode
@@ -84,6 +88,16 @@ void lcd_clear()
   must_clear = 1;
 }
 
+void lcd_do_clear()
+{
+  uint8_t i;
+  command(LCD_CLEARDISPLAY);  // clear display, set cursor position to zero
+  cursor = 0;
+  for (i=0; i<32;i++)
+    text_buffer[i] = 0;
+
+  delay(2);  // this command takes a long time!
+}
 
 void lcd_print_char(char c)
 {
@@ -121,13 +135,7 @@ void lcd_refresh(void){
   // clears takes precedence
   if (must_clear){
     must_clear = 0;
-    command(LCD_CLEARDISPLAY);  // clear display, set cursor position to zero
-    cursor = 0;
-    for (i=0; i<32;i++)
-      text_buffer[i] = 0;
-
-    delay(2000);  // this command takes a long time!
-    return;
+    lcd_do_clear();
   }
 
   if (dirty_mask!=0x00){
@@ -150,12 +158,9 @@ void lcd_refresh(void){
 //definicion de funciones privadas
 static void delay(uint32_t ms)
 {
-  uint32_t i;
-  while(ms--){
-	   i=1000;
-	  	  while(i--);
-  	  }
+  timer1_delay_ms(ms);
 }
+
 
 
 static void set_cursor(uint8_t row, uint8_t col)
@@ -198,6 +203,6 @@ static void pulse_enable(void) {
   gpio_set_pin(LCD_PINE, LCD_HIGH);
   delay(1);    // enable pulse must be >450ns
   gpio_set_pin(LCD_PINE, LCD_LOW);
-  delay(100);   // commands need > 37us to settle
+  delay(1);   // commands need > 37us to settle
 }
 

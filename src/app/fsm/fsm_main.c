@@ -121,14 +121,25 @@ static void write_exit( void)
 
 static void idle_enter( void)
 {
-  //lcd_print_at("IDLE STATE",0,0);
+  lcd_print_at("IDLE STATE",0,0);
 }
 
 static void idle_update( void)
 {
+  return;
+
+  uint8_t data;
+  buffer_status_t status;
   //if data frame available, receive it!
   if(client_data_frame_received())
-    fsm_main_change(FSM_MAIN_STATE_RECEIVING);
+  {
+    uint8_t data = client_rx_pop();
+    printf("client_rx_pop : %d \n" , data);
+    messagesBufferPush(data);
+    status = messagesBufferProcess();
+    printf(" buffer sstatus : %d \n" , status );
+  }
+    //fsm_main_change(FSM_MAIN_STATE_RECEIVING);
 
 }
 

@@ -113,7 +113,6 @@ void client_setup(void)
   uart1_setup();
 #endif
 
-  lcd_clear();
   //systick_delay_async(1000, 1,update_lcd_timer);
 
 }
@@ -123,9 +122,9 @@ void client_setup(void)
 uint8_t client_data_frame_received ( void)
 {
 #ifdef USE_UART0
-  return (uart0_rx_data_size()>=sizeof(tp4_data_frame_t));
+  return (uart0_rx_data_size()>0);
 #else
-  return (uart1_rx_data_size()>=sizeof(tp4_data_frame_t));
+  return (uart1_rx_data_size()>0);
 #endif
 
 }

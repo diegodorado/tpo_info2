@@ -290,7 +290,6 @@ typedef struct
 /*
  * Fin de UART
  **/
-/*
 #define     __R     volatile const
 #define     __W     volatile
 #define     __RW    volatile

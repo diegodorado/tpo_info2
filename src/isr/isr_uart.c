@@ -25,7 +25,7 @@ void UART0_IRQHandler(void){
 
       case (UART_INT_ID_RLS):
         //todo: implementar Interr por LINE STATUS
-        //printf("%d RLS INT, tx_size: %d  LSR: %d INT_STATUS: %d\n",x,uart0_tx_data_size(), UART0->LSR, iir.INT_STATUS);
+        printf("%d RLS INT, tx_size: %d  LSR: %d INT_STATUS: %d\n",x,uart0_tx_data_size(), UART0->LSR, iir.INT_STATUS);
         break;
 
       case (UART_INT_ID_RDA):
@@ -39,12 +39,12 @@ void UART0_IRQHandler(void){
       case (UART_INT_ID_CTI):
         while(UART0->LSR.RDR){
           uart0_rx_push(UART0->RBR);
-          //printf("%d CTI INT ID nro %d  LSR.RDR: %d INT_STATUS: %d\n",x,rx_int_counter, UART0->LSR.RDR, iir.INT_STATUS);
+          printf("%d CTI INT ID nro %d  LSR.RDR: %d INT_STATUS: %d\n",x,rx_int_counter, UART0->LSR.RDR, iir.INT_STATUS);
         }
         break;
 
       case (UART_INT_ID_THRE):
-        //printf("%d THRE INT, tx_size: %d  LSR.RDR: %d INT_STATUS: %d\n",x,uart0_tx_data_size(), UART0->LSR.RDR, iir.INT_STATUS);
+        printf("%d THRE INT, tx_size: %d  LSR.RDR: %d INT_STATUS: %d\n",x,uart0_tx_data_size(), UART0->LSR.RDR, iir.INT_STATUS);
         if(uart0_tx_data_size()>0)
           UART0->THR = uart0_tx_pop();
         break;
@@ -63,47 +63,46 @@ void UART0_IRQHandler(void){
 
 void UART1_IRQHandler(void){
 
-  int x=0; // iir auxiliar, ya que el registro se borra al leerlo
   uart_iir_t iir; // iir auxiliar, ya que el registro se borra al leerlo
-  static int rx_int_counter = 0;
+  int data;
+  static int x = 0;
+
+  if(x>5)
+    printf("recibi 20\n");
 
   do
   {
-    x++;
     iir = UART1->IIR;
 
     switch(iir.INT_ID) {
 
-      case (UART_INT_ID_RLS):
-        //todo: implementar Interr por LINE STATUS
-#ifdef DEBUG_ON
-        printf("%d RLS INT, tx_size: %d  LSR: %d INT_STATUS: %d\n",x,uart1_tx_data_size(), UART1->LSR, iir.INT_STATUS);
-#endif
-        break;
-
       case (UART_INT_ID_RDA):
+          x++;
+      data = UART1->RBR;
+        //printf(" RDA INT ID data 0x%x, lsr: 0x%x  overrun %d \n",UART1->RBR, UART1->LSR,UART1->LSR.OE);
         while(UART1->LSR.RDR){
-          rx_int_counter++;
-          uart1_rx_push(UART1->RBR);
-#ifdef DEBUG_ON
-          printf("%d RDA INT ID nro %d  LSR.RDR: %d INT_STATUS: %d\n",x,rx_int_counter, UART1->LSR.RDR, iir.INT_STATUS);
-#endif
+          x++;
+          data = UART1->RBR;
+          //rx_int_counter++;
+          //uart1_rx_push(UART1->RBR);
+          //printf(" RDA INT ID data 0x%x, lsr: 0x%x  overrun %d \n",UART1->RBR, UART1->LSR,UART1->LSR.OE);
         }
         break;
 
       case (UART_INT_ID_CTI):
         while(UART1->LSR.RDR){
-          uart1_rx_push(UART1->RBR);
-#ifdef DEBUG_ON
-          printf("%d CTI INT ID nro %d  LSR.RDR: %d INT_STATUS: %d\n",x,rx_int_counter, UART1->LSR.RDR, iir.INT_STATUS);
-#endif
+          //uart1_rx_push(UART1->RBR);
         }
         break;
 
+      case (UART_INT_ID_RLS):
+            while(UART1->LSR.RDR){
+              uart1_rx_push(UART1->RBR);
+            }
+        break;
+
+
       case (UART_INT_ID_THRE):
-#ifdef DEBUG_ON
-        printf("%d THRE INT, tx_size: %d  LSR.RDR: %d INT_STATUS: %d\n",x,uart1_tx_data_size(), UART1->LSR.RDR, iir.INT_STATUS);
-#endif
         if(uart1_tx_data_size()>0)
           UART1->THR = uart1_tx_pop();
         break;
@@ -116,4 +115,5 @@ void UART1_IRQHandler(void){
 
 
 }
+
 #endif

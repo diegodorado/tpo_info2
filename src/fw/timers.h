@@ -21,6 +21,8 @@
 
 void timer0_setup(void);
 void  timer0_mr0_interrupt(void);
+void timer1_setup(void);
+void  timer1_delay_ms(uint8_t ms);
 
 
 #endif /* TIMERS_H_ */
