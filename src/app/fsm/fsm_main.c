@@ -35,7 +35,7 @@ static void error_exit( void);
 
 // definicion de la tabla de punteros a funcion
 // que debe corresponderse con fsm_main_state_t
-void (* const state_table[][3])(void) = {
+static void (* const state_table[][3])(void) = {
   {idle_enter    , idle_update    , idle_exit},
   {playback_enter, playback_update, playback_exit},
   {write_enter   , write_update   , write_exit},
@@ -126,21 +126,6 @@ static void idle_enter( void)
 
 static void idle_update( void)
 {
-  return;
-
-  uint8_t data;
-  buffer_status_t status;
-  //if data frame available, receive it!
-  if(client_data_frame_received())
-  {
-    uint8_t data = client_rx_pop();
-    printf("client_rx_pop : %d \n" , data);
-    messagesBufferPush(data);
-    status = messagesBufferProcess();
-    printf(" buffer sstatus : %d \n" , status );
-  }
-    //fsm_main_change(FSM_MAIN_STATE_RECEIVING);
-
 }
 
 static void idle_exit( void)
@@ -151,26 +136,6 @@ static void idle_exit( void)
 
 static void receiving_enter( void)
 {
-  tp4_data_frame_t data;
-
-  lcd_print_at("RX: ",0,0);
-  data = client_decode_data_frame();
-
-  if (client_is_checksum_ok(data)){
-    //lcd_clear();
-    lcd_print_char(data.event + '0');
-    lcd_print(" @ (");
-    lcd_print_char(data.minutes / 10 + '0');
-    lcd_print_char(data.minutes % 10 + '0');
-    lcd_print_char(':');
-    lcd_print_char(data.seconds / 10 + '0');
-    lcd_print_char(data.seconds % 10 + '0');
-    lcd_print_char(')');
-    fsm_main_change(FSM_MAIN_STATE_IDLE);
-  }else{
-    fsm_main_change(FSM_MAIN_STATE_ERROR);
-  }
-
 }
 
 static void receiving_update( void)
@@ -185,9 +150,7 @@ static void receiving_exit( void)
 
 static void error_enter( void)
 {
-  lcd_print_at("CHKSUM ERROR",0,0);
-  lcd_print_at("RESTART DEVICE...",1,0);
-  while(1){}; //app is hung
+
 }
 
 static void error_update( void)

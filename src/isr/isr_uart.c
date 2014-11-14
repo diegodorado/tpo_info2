@@ -60,15 +60,22 @@ void UART0_IRQHandler(void){
 #endif
 
 #ifdef USE_UART1
+void print_it(char data)
+{
+  static int x = 0;
 
+  int col = x % 16;
+  int row = (x<16)? 0: 1;
+
+  lcd_print_char_at(data,row,col);
+
+  x++;
+  x %= 32;
+
+}
 void UART1_IRQHandler(void){
 
   uart_iir_t iir; // iir auxiliar, ya que el registro se borra al leerlo
-  int data;
-  static int x = 0;
-
-  if(x>5)
-    printf("recibi 20\n");
 
   do
   {
@@ -77,28 +84,15 @@ void UART1_IRQHandler(void){
     switch(iir.INT_ID) {
 
       case (UART_INT_ID_RDA):
-          x++;
-      data = UART1->RBR;
-        //printf(" RDA INT ID data 0x%x, lsr: 0x%x  overrun %d \n",UART1->RBR, UART1->LSR,UART1->LSR.OE);
-        while(UART1->LSR.RDR){
-          x++;
-          data = UART1->RBR;
-          //rx_int_counter++;
-          //uart1_rx_push(UART1->RBR);
-          //printf(" RDA INT ID data 0x%x, lsr: 0x%x  overrun %d \n",UART1->RBR, UART1->LSR,UART1->LSR.OE);
-        }
+        uart1_rx_push(UART1->RBR);
         break;
 
       case (UART_INT_ID_CTI):
-        while(UART1->LSR.RDR){
-          //uart1_rx_push(UART1->RBR);
-        }
+        uart1_rx_push(UART1->RBR);
         break;
 
       case (UART_INT_ID_RLS):
-            while(UART1->LSR.RDR){
-              uart1_rx_push(UART1->RBR);
-            }
+        print_it('L');
         break;
 
 

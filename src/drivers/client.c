@@ -42,66 +42,90 @@ static void update_lcd_timer(void){
 
 
 
-/**
- * TRAMA SERIE
- * [(tiempo)#velocidad#%evento%checksum]
- * evento: 0 a 4 (numero de pulsador)
- * ejemplo: [(22:39)#87#%numero_pulsador%xor_total]
- *
- * */
 
-static uint8_t checksum(tp4_data_frame_t data)
+uint8_t client_has_message()
 {
-  uint8_t* data_ptr = (uint8_t*) &data;  //cast data struct as uint8_t pointer
-  uint8_t result = 0;
-  for(; data_ptr - (uint8_t*)&data < sizeof(data) - 1 ; ) // -1, since last uint8_t is the checksum itself
-    result ^= *data_ptr++;
-
-  return result;
-}
-
-uint8_t client_is_checksum_ok(tp4_data_frame_t data)
-{
-  return (data.checksum == checksum(data));
-}
-
-
-
-void client_send_data_frame (uint8_t velocity,uint8_t event, uint8_t fake_checksum)
-{
-  tp4_data_frame_t data;
-  uint8_t* data_ptr = (uint8_t*) &data;  //cast data struct as uint8_t pointer
-
-  data.minutes = minutes_only();
-  data.seconds = seconds_only();
-  data.velocity = velocity;
-  data.event = event;
-  data.checksum = checksum(data);
-
-  if(fake_checksum)
-    data.checksum = fake_checksum;
-
-  //uso de punteros para serializar la estructura
-  // y aritmetica de punteros para recorrerla
-  for(; data_ptr - (uint8_t*)&data < sizeof(data); ){
-    client_tx_push(*data_ptr++);
+  uint8_t data;
+  // fill message buffer if there is data on serial buffer
+  while( client_data_size()>0 )
+  {
+    data = client_rx_pop();
+    messagesBufferPush( data );
   }
 
-
+  // return 1 if meesage buffer has a complete message checked
+  buffer_status_t bufferStatus;
+  bufferStatus = messagesBufferProcess();
+  return bufferStatus == BUFFER_MSG_OK;
 }
 
-tp4_data_frame_t client_decode_data_frame(void)
+message_hdr_t* client_get_message()
 {
-  tp4_data_frame_t data;
-  uint8_t* data_ptr = (uint8_t*) &data;  //cast data struct as uint8_t pointer
+  uint8_t* raw_data = messagesBufferPop();
+  message_hdr_t* message = (message_hdr_t*) raw_data;
 
-  //uso de punteros para serializar la estructura
-  // y aritmetica de punteros para recorrerla
-  for(; data_ptr - (uint8_t*)&data < sizeof(data); )
-    *data_ptr++ = client_rx_pop();
+  //perform some common validations
 
-  return data;
+  if(message == NULL){
+    free(message);
+    lcd_print_char_at('3',1,8);//debug!
+    return NULL;
+  }
+
+  if(message->msg_type >= MESSAGE_MAX_VALID_TYPE){
+    free(message);
+    lcd_print_char_at('4',1,9); //debug!
+    return NULL;
+  }
+
+  return message;
+
 }
+
+
+
+
+void client_send_status_response(message_hdr_t* request, status_id_t status)
+{
+  message_hdr_t response;
+
+  response.data_length = 1;
+  response.msg_id = request->msg_id;
+  response.msg_type = request->msg_type;
+  response.is_response = 1;
+  client_send_message_response(&response, (uint8_t*)&status);
+
+}
+
+
+
+void client_send_message_response(message_hdr_t* message, uint8_t* data)
+{
+  client_send_message(message, data);
+}
+
+void client_send_message(message_hdr_t* message, uint8_t* data)
+{
+
+  int i;
+  uint8_t checksum = messageGetChecksum(message, data);
+
+  client_tx_push(START_OF_FRAME);
+  client_tx_push(message->data_length);
+  client_tx_push(message->msg_id);
+  client_tx_push(message->msg_full_type);
+
+  for(i = 0; i < message->data_length ; i++){
+    client_tx_push(*(data + i));
+  }
+
+  client_tx_push(checksum);
+  client_tx_push(END_OF_FRAME);
+
+}
+
+
+
 
 
 
@@ -113,18 +137,17 @@ void client_setup(void)
   uart1_setup();
 #endif
 
-  //systick_delay_async(1000, 1,update_lcd_timer);
 
 }
 
 
 
-uint8_t client_data_frame_received ( void)
+uint8_t client_data_size ( void)
 {
 #ifdef USE_UART0
-  return (uart0_rx_data_size()>0);
+  return uart0_rx_data_size();
 #else
-  return (uart1_rx_data_size()>0);
+  return uart1_rx_data_size();
 #endif
 
 }
