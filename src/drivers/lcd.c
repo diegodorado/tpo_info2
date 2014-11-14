@@ -99,6 +99,17 @@ void lcd_do_clear()
   delay(2);  // this command takes a long time!
 }
 
+void lcd_print_int_at(  uint32_t value, uint8_t size,uint8_t row,uint8_t col)
+{
+  for(;size-->0;value/=10)
+    lcd_print_char_at('0' + (value%10),row, col--);
+
+  // int was too big? ***mark it***
+  if(value>10)
+    lcd_print_char('*');
+
+}
+
 void lcd_print_char(char c)
 {
   if(text_buffer[cursor]!=c)

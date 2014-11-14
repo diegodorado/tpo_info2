@@ -13,31 +13,21 @@
 #include "drivers.h"
 #include "protocol.h"
 
-
-/**
- * TRAMA SERIE
- * [(tiempo)#velocidad#%evento%checksum]
- * evento: 0 a 4 (numero de pulsador)
- * ejemplo: [(22:39)#87#%numero_pulsador%xor_total]
- *
- * */
-typedef struct{
-  uint8_t minutes;
-  uint8_t seconds;
-  uint8_t velocity;
-  uint8_t event;
-  uint8_t checksum;
-} tp4_data_frame_t;
-
-
 void client_setup(void);
 
 uint8_t client_rx_pop ( void);
 void client_tx_push ( uint8_t);
-uint8_t client_data_frame_received (void);
+uint8_t client_data_size (void);
 
-void client_send_data_frame (uint8_t,uint8_t, uint8_t);
-tp4_data_frame_t client_decode_data_frame(void);
-uint8_t client_is_checksum_ok(tp4_data_frame_t);
+uint8_t client_has_message();
+message_hdr_t* client_get_message();
+
+
+
+
+void client_send_status_response(message_hdr_t* request, status_id_t status);
+void client_send_message_response(message_hdr_t* message, uint8_t* data);
+void client_send_message(message_hdr_t* message, uint8_t* data);
+
 
 #endif /* CLIENT_H_ */

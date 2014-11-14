@@ -1,5 +1,5 @@
 #include "setup/setup.h"
-#include "fsm/fsm_main.h"
+#include "fsm.h"
 
 int main(void)
 {
@@ -10,6 +10,7 @@ int main(void)
   //fsm_main_start();
 
  	while(1){
+ 	  fsm_client_update();  // ejecuta un tick de la maquina de estados "cliente"
 	   //pasa el control del ciclo a la
 	   //maquina de estados principal
 	   //fsm_main_update();
