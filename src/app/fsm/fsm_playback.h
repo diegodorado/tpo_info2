@@ -8,18 +8,20 @@
 #ifndef FSM_PLAYBACK_H_
 #define FSM_PLAYBACK_H_
 
+//include drivers
+#include "drivers.h"
 
-typedef enum { FSM_PLAYBACK_STATE_PLAY, FSM_PLAYBACK_STATE_PAUSE, FSM_PLAYBACK_STATE_STOP } fsm_playback_state_t;
+typedef enum {
+	FSM_PLAYBACK_STATE_PLAY,
+	FSM_PLAYBACK_STATE_PAUSE,
+	FSM_PLAYBACK_STATE_STOP,
+	FSM_PLAYBACK_STATE_NEXT,
+	FSM_PLAYBACK_STATE_PREVIOUS,
+} fsm_playback_state_t;
 
-extern fsm_playback_state_t fsm_playback_state;
-
-void fsm_playback(void);
-
-
-void fsm_playback_play( void);
-void fsm_playback_pause( void);
-void fsm_playback_stop( void);
-
+void fsm_playback_update(void);
+void fsm_playback_change(fsm_playback_state_t st);
+fsm_playback_state_t fsm_playback_state();
 
 
 #endif /* FSM_PLAYBACK_H_ */

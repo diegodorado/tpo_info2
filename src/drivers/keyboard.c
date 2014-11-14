@@ -123,15 +123,23 @@ static void keyboard_refresh(void){
 void keyboard_handle_key(uint8_t key){
 
   if(key == 0){
-    client_send_data_frame (50,1,0);
+	fsm_playback_change(FSM_PLAYBACK_STATE_PREVIOUS);
   }
   else if(key == 1){
-    client_send_data_frame (50,2,0);
+	  if(fsm_playback_state()==FSM_PLAYBACK_STATE_PLAY)
+	  {
+		  fsm_playback_change(FSM_PLAYBACK_STATE_PAUSE);
+	  }
+	  else
+	  {
+		  fsm_playback_change(FSM_PLAYBACK_STATE_PLAY);
+	  }
   }
   else if(key == 2){
-    client_send_data_frame (100,3,0);
+
+	  fsm_playback_change(FSM_PLAYBACK_STATE_STOP);
   }
   else if(key == 3){
-    client_send_data_frame (150,4,12);
+		fsm_playback_change(FSM_PLAYBACK_STATE_NEXT);
   }
 }
