@@ -73,36 +73,77 @@ void print_it(char data)
   x %= 32;
 
 }
+
+
 void UART1_IRQHandler(void){
 
+  volatile static int w = 0;
+  volatile static int x = 0;
+  volatile static int y = 0;
+  volatile static int z = 0;
+
   uart_iir_t iir; // iir auxiliar, ya que el registro se borra al leerlo
+  uart_lsr_t lsr; // RLS interrupt is cleared upon an LSR read
+
+
+
+  uint8_t data;
 
   do
   {
     iir = UART1->IIR;
 
+    if ( ! iir.INT_STATUS ){
+      if(w++>0)
+        lcd_print_int_at(w,6,1,15);
+    }
+
     switch(iir.INT_ID) {
 
       case (UART_INT_ID_RDA):
-        uart1_rx_push(UART1->RBR);
+          data = UART1->RBR;
+          if(x++>0)
+            lcd_print_int_at(x,6,0,15);
+        //uart1_rx_push(UART1->RBR);
         break;
 
       case (UART_INT_ID_CTI):
-        uart1_rx_push(UART1->RBR);
+          data = UART1->RBR;
+          y++;
+          lcd_print_int_at(y,4,1,4);
         break;
 
       case (UART_INT_ID_RLS):
-        print_it('L');
+        z++;
+        lsr = UART1->LSR; //reading clears the interrupt
+        if(lsr.BI)
+          lcd_print_at("BI",0,3);
+        if(lsr.FE)
+          lcd_print_at("FE",1,0);
+        if(lsr.OE)
+          lcd_print_at("OE",0,0);
+        if(lsr.PE)
+          lcd_print_at("PE",1,3);
+
+        lcd_print_int_at(x,6,0,9);
+        lcd_print_int_at(z,4,1,4);
+
+        w=x=0;
+
         break;
 
 
       case (UART_INT_ID_THRE):
-        if(uart1_tx_data_size()>0)
-          UART1->THR = uart1_tx_pop();
+        //UART1->THR = x;
+          //UART1->LSR.OE = 0;
+        //if(uart1_tx_data_size()>0)
+        //  UART1->THR = uart1_tx_pop();
         break;
 
 
     }
+
+
 
 
   } while( ! iir.INT_STATUS ); // continuar mientras haya interrupciones pendientes

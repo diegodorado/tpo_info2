@@ -122,10 +122,10 @@ static void keyboard_refresh(void){
 
 void keyboard_handle_key(uint8_t key){
 
-  if(key == 0){
-	fsm_playback_change(FSM_PLAYBACK_STATE_PREVIOUS);
+  if(key == 3){
+    fsm_playback_change(FSM_PLAYBACK_STATE_PREVIOUS);
   }
-  else if(key == 1){
+  else if(key == 2){
 	  if(fsm_playback_state()==FSM_PLAYBACK_STATE_PLAY)
 	  {
 		  fsm_playback_change(FSM_PLAYBACK_STATE_PAUSE);
@@ -135,11 +135,11 @@ void keyboard_handle_key(uint8_t key){
 		  fsm_playback_change(FSM_PLAYBACK_STATE_PLAY);
 	  }
   }
-  else if(key == 2){
+  else if(key == 1){
 
 	  fsm_playback_change(FSM_PLAYBACK_STATE_STOP);
   }
-  else if(key == 3){
+  else if(key == 0){
 		fsm_playback_change(FSM_PLAYBACK_STATE_NEXT);
   }
 }

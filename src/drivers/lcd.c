@@ -81,6 +81,12 @@ void lcd_setup(void)
   // set the entry mode
   command(LCD_ENTRYMODESET | LCD_ENTRYLEFT | LCD_ENTRYSHIFTDECREMENT);
 
+
+  // refresco periodico del lcd
+  // es llamado por las interrupciones del systick
+  // cada 200 milisegundos
+  systick_delay_async(200, 1,lcd_refresh);
+
 }
 
 void lcd_clear()

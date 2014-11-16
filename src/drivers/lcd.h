@@ -4,6 +4,7 @@
 //include firmware
 #include "fw.h"
 #include "sysdefs.h"
+#include "drivers.h"
 
 
 #define LCD_LOW 0

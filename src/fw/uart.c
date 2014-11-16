@@ -79,8 +79,10 @@ void uart1_setup(void)
   UART1->LCR =0x83;
 
   //4.- Registros U1DLL (0x40010000) y U1DLM (0x40010004) en 0xA2:
-  UART1->DLM = 0x00;   // es el resultado de 25Mhz/(9600*16)---> 163
-  UART1->DLL = 0xA3;
+  //UART1->DLM = 0x00;   // es el resultado de 25Mhz/(9600*16)---> 163
+  //UART1->DLL = 0xA3;
+  UART1->DLM = 0x02;   // es el resultado de 25Mhz/(2400*16)---> 651
+  UART1->DLL = 0x8D;
 
   //5. habilitan las funciones especiales de los pines:
   set_pin_sel(U1TX_PIN,1);

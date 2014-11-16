@@ -10,7 +10,8 @@ int main(void)
   //fsm_main_start();
 
  	while(1){
- 	  fsm_client_update();  // ejecuta un tick de la maquina de estados "cliente"
+ 	  //fsm_client_update();  // ejecuta un tick de la maquina de estados "cliente"
+ 	  //fsm_playback_update();
 	   //pasa el control del ciclo a la
 	   //maquina de estados principal
 	   //fsm_main_update();
