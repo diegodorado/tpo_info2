@@ -11,18 +11,10 @@
 #include "sysdefs.h"
 #include "periph.h"
 
-
-
-#define  MATCH0_0   1000
-#define  MATCH0_1   (MATCH0_0 + 100)
-#define  MATCH0_2   (MATCH0_0 + 500)
-#define  MATCH0_3   (MATCH0_0 + 2000)
-#define  PREESCALER0 10000
-
 void timer0_setup(void);
 void  timer0_mr0_interrupt(void);
-void timer1_setup(void);
-void  timer1_delay_ms(uint8_t ms);
+uint32_t timer0_us(void);
+void  timer0_delay_us(uint32_t us);
 
 
 #endif /* TIMERS_H_ */

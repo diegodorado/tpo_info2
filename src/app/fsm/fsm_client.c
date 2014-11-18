@@ -77,7 +77,7 @@ static void idle( void)
     {
       if( message->msg_type== MESSAGE_HANDSHAKE)
       {
-        lcd_print_at("HANDSHAKE!",1,0);
+        //lcd_print_at("HANDSHAKE!",1,0);
         client_send_status_response(message, STATUS_OK);
         fsm_client_change(FSM_CLIENT_STATE_CONNECTED);
       }
@@ -209,12 +209,12 @@ static void processing_fileheader( void)
   int i;
   fileheader_data_t* header;
   header = (fileheader_data_t*) messageData(last_request);
-  lcd_print_at("F.Req: ",0,0);
-  for(i=0;i<sizeof(header->filename);i++)
-    lcd_print_char(header->filename[i]);
+  //lcd_print_at("F.Req: ",0,0);
+  //for(i=0;i<sizeof(header->filename);i++)
+    //lcd_print_char(header->filename[i]);
 
-  lcd_print_at("Chunks: ",1,0);
-  lcd_print_int_at(header->chunks_count,8,1,15);
+  //lcd_print_at("Chunks: ",1,0);
+  //lcd_print_int_at(header->chunks_count,8,1,15);
 
   if(header->chunks_count>700)
   {
@@ -250,7 +250,7 @@ static void processing_filechunks( void)
     {
       if( message->msg_type== MESSAGE_FILECHUNK)
       {
-        lcd_print_at("pCH-",0,0);
+        //lcd_print_at("pCH-",0,0);
 
         process_chunk(message);
       }
@@ -287,9 +287,9 @@ static void process_chunk( message_hdr_t* request)
 
   lcd_print_int_at(chunk.chunk_id,5,0,15);
 
-  lcd_print_char_at('%',1,0);
+  //lcd_print_char_at('%',1,0);
   chunks_left--;
-  lcd_print_int_at((chunks_count-chunks_left)*100/chunks_count,3,1,3);
+  //lcd_print_int_at((chunks_count-chunks_left)*100/chunks_count,3,1,3);
 
   if(chunks_left<500)
   {

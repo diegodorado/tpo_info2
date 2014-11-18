@@ -43,9 +43,17 @@ void timer0_setup(void)
 }
 
 
+static volatile uint32_t us = 0;
+uint32_t timer0_us()
+{
+  return us;
+}
+
 
 void  timer0_mr0_interrupt()
 {
+  us++;
+  /*
   static volatile int counter = 0;
   static volatile int sample_index = 0;
   static volatile unsigned char last_sample;
@@ -60,41 +68,15 @@ void  timer0_mr0_interrupt()
   }
 
   dac_set_value(last_sample);
+*/
 
 }
 
 
 
 
-
-//for now, it is just timer0
-void timer1_setup(void)
+void  timer0_delay_us(uint32_t us)
 {
-
-  PCONP |= (1 << 1);   // Habilitar Timer 0 Pag 63
-  PCLKSEL0 &= ~(3 << 2);  // Clock for timer: CCLK/4.... 25MHz
-
-  TIMER0->TCR_ENABLED = 0;    // Apago el temporizador
-  TIMER0->TCR_RESET = 1;      // Reseteo el temporizador
-
-  TIMER0->PR = 25000;   // 1ms
-  TIMER0->PC = 0;
-  TIMER0->TC = 0;
-
-  TIMER0->TCR_RESET = 0;      // Apago el bit de RESET
-
-}
-
-
-void  timer1_delay_ms(uint8_t ms)
-{
-  TIMER0->TC = 0;
-  TIMER0->TCR_ENABLED = 1;    // Enciendo el temporizador
-
-  //wait until timer counter reaches the desired dela1y
-  while(TIMER0->TC < ms);
-
-
-  TIMER0->TCR_ENABLED = 0;    //disable timer
-
+  uint32_t last_us = timer0_us();
+  while(last_us + us != timer0_us());
 }

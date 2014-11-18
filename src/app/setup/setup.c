@@ -17,8 +17,8 @@ void setup(void){
   //storage_setup(); //inicializar almacenamiento (tarjeta SD)
   client_setup(); // inicializar cliente remoto (UART)
 
-  lcd_print_at("ALo",0,0);
-  //lcd_print_at("->",1,1);
+  lcd_print_at("unobstrusive!",0,0);
+  lcd_print_at("LCD...",1,1);
 
 }
 

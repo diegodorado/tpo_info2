@@ -1,28 +1,40 @@
 #include "lcd.h"
 
-//declaracion de funciones privadas
-static void set_cursor(uint8_t, uint8_t);
-static void command(uint8_t);
-static void write(uint8_t);
-static void send(uint8_t, uint8_t);
-static void pulse_enable(void);
-static void write_4_bits(uint8_t);
-static void delay(uint32_t);
-static void lcd_do_clear(void);
-
-
-static volatile char text_buffer[32]; //holds the representation of lcd text
-static volatile uint32_t dirty_mask = 0x00; //holds wich char needs to be drawed
-static volatile char must_clear = 0; //if set to 1 will clear lcd on lcd_refresh call
-static volatile uint8_t cursor = 0; //holds cursor index, to see if there is need of setting cursor before write
 
 //definicion de funciones publicas
+static volatile uint8_t has_to_clear = 0; //if set to 1 will clear lcd on lcd_refresh call
+static volatile char text_buffer[32]; //holds the representation of lcd text
+static volatile uint32_t dirty_mask = 0x00; //holds wich char needs to be drawed
+static volatile uint8_t cursor = 0; //holds cursor index, to see if there is need of setting cursor before write
+
+
+//declaracion de funciones privadas
+static void write_4_bits(uint8_t value);
+static void pulse_enable_low(void);
+static void pulse_enable_high(void);
+static void mode_low(void);
+static void mode_high(void);
+
+
+static void clear();
+static uint8_t set_cursor(uint8_t row, uint8_t col);
+static void refresh_chars(void);
+static uint8_t command(uint8_t value);
+static uint8_t write(uint8_t value);
+static uint8_t write4bits( uint8_t value);
+
+
+
+
+
+
+
 
 
 void lcd_setup(void)
 {
 
-  timer1_setup();
+  timer0_setup();
 
   // When the display powers up, it is configured as follows:
   //
@@ -47,7 +59,8 @@ void lcd_setup(void)
   gpio_set_dir(LCD_PINE, 1);
 
 
-  delay(20); //20ms de startup
+  timer0_delay_us(20000);  //20ms de startup
+
 
   // Now we pull both RS and R/W low to begin commands
   gpio_set_pin(LCD_PINRS, LCD_LOW);
@@ -55,15 +68,15 @@ void lcd_setup(void)
 
   // we start in 8bit mode, try to set 4 bit mode
   write_4_bits(0x03);
-  delay(5); // wait min 4.1ms
+  timer0_delay_us(4100); // wait min 4.1ms
 
   // second try
   write_4_bits(0x03);
-  delay(5); // wait min 4.1ms
+  timer0_delay_us(4100); // wait min 4.1ms
 
   // third go!
   write_4_bits(0x03);
-  delay(1);
+  timer0_delay_us(150); //150 us
 
   // finally, set to 8-bit interface
   write_4_bits(0x02);
@@ -75,35 +88,297 @@ void lcd_setup(void)
   command(LCD_DISPLAYCONTROL | LCD_DISPLAYON | LCD_CURSOROFF | LCD_BLINKOFF);
 
   // clear it off
-  lcd_do_clear();
+  command(LCD_CLEARDISPLAY);  // clear display, set cursor position to zero
+  timer0_delay_us(2000);  // this command takes a long time!
 
   // Initialize to default text direction (for romance languages)
   // set the entry mode
   command(LCD_ENTRYMODESET | LCD_ENTRYLEFT | LCD_ENTRYSHIFTDECREMENT);
 
 
-  // refresco periodico del lcd
-  // es llamado por las interrupciones del systick
-  // cada 200 milisegundos
-  systick_delay_async(200, 1,lcd_refresh);
 
 }
+
+
+
+void lcd_refresh(void)
+{
+
+  if(has_to_clear)
+  {
+    clear();
+  }
+  else
+  {
+    refresh_chars();
+  }
+
+
+}
+
+
+static uint8_t clear()
+{
+  static uint32_t wait_until;
+  static uint8_t cmd_result;
+
+  crBegin;
+  while (1) {
+    cmd_result = command(LCD_CLEARDISPLAY);
+    if (cmd_result == 0)
+    {
+      crReturn(0);
+    }
+    else
+    {
+      wait_until =  timer0_us() + 2000;
+      crReturn(0);
+      if (wait_until == timer0_us())
+      {
+        has_to_clear = 0;
+        break;
+      }
+
+    }
+
+  }
+  crReturn(1);
+  crFinish;
+
+  //command(LCD_CLEARDISPLAY);
+  //has_to_clear = 0;
+  //timer0_delay_us(2000);
+
+}
+
+
+static void clear_old()
+{
+  static int last_us = 0;
+  static uint8_t phase = 0;
+
+  switch(phase) {
+
+    case 0:
+      if(command(LCD_CLEARDISPLAY))
+      {
+        phase++;
+        last_us = timer0_us();
+      }
+      break;
+    case 1:
+      // this command takes a long time!
+      if(last_us + 2000 == timer0_us())
+        phase++;
+      break;
+    case 2:
+      phase = 0;
+      has_to_clear = 0;
+  }
+
+}
+
+
+
+static uint8_t set_cursor(uint8_t row, uint8_t col)
+{
+  int offset = 0x00;
+  if ( row > 0 )
+    offset = 0x40;
+
+  return command(LCD_SETDDRAMADDR | (offset + col));
+}
+
+
+//refresca el lcd con el buffer
+//solo donde sea necesario
+// refresca un caracter por llamada
+static void refresh_chars(void){
+
+  static uint8_t current_cursor;
+  static uint8_t cursor_not_set = 1;
+
+  if(dirty_mask == 0x00)
+    return; // nothing to do!
+
+  if(dirty_mask & (0x01<<current_cursor )){ //matches a dirty char
+    //should_set_cursor
+    if(cursor_not_set && cursor!=current_cursor )
+      if(!set_cursor(current_cursor >15,current_cursor%16))
+      {
+        cursor_not_set = 0;
+        return;
+      }
+
+
+    if(!write(text_buffer[current_cursor]))
+      return;
+
+    dirty_mask &= ~(0x01<<current_cursor ); //clears dirty mask at current_cursor position
+  }
+
+  current_cursor++;
+  cursor_not_set = 1;
+  current_cursor %= 32;
+
+
+}
+
+
+
+static uint8_t command(uint8_t value) {
+      mode_low();
+      write4bits(value>>4);
+      write4bits(value);
+      return 1;
+}
+
+static uint8_t command_old(uint8_t value) {
+  static uint8_t phase = 0;
+
+  switch(phase) {
+
+    case 0:
+      mode_low();
+      phase++;
+      break;
+    case 1:
+      if(write4bits(value>>4))
+        phase++;
+      break;
+    case 2:
+      if(write4bits(value))
+        phase++;
+      break;
+    case 3:
+      phase = 0;
+      return 1;
+
+  }
+
+  return 0;
+
+}
+
+
+static uint8_t write(uint8_t value) {
+      mode_high();
+      write4bits(value>>4);
+      write4bits(value);
+      return 1;
+}
+
+static uint8_t write__(uint8_t value) {
+  static uint8_t phase = 0;
+
+  switch(phase) {
+
+    case 0:
+      mode_high();
+      phase++;
+      break;
+    case 1:
+      if(write4bits(value>>4))
+        phase++;
+      break;
+    case 2:
+      if(write4bits(value))
+        phase++;
+      break;
+    case 3:
+      phase = 0;
+      return 1;
+
+  }
+
+  return 0;
+
+}
+
+
+static uint8_t write4bits( uint8_t value)
+{
+  write_4_bits(value);
+  pulse_enable_low();
+  timer0_delay_us(40);
+  pulse_enable_high();
+  timer0_delay_us(1);
+  pulse_enable_low();
+  timer0_delay_us(40);
+  return 1;
+
+}
+
+
+
+static uint8_t write4bits_old( uint8_t value)
+{
+  static uint8_t phase = 0;
+  static int last_us = 0;
+
+  switch(phase) {
+
+    case 0:
+      write_4_bits(value);
+      phase++;
+      break;
+    case 1:
+      pulse_enable_low();
+      phase++;
+      last_us = timer0_us();
+      break;
+    case 2:
+      if(last_us + 400 == timer0_us())
+        phase++;
+      break;
+    case 3:
+      pulse_enable_high();
+      phase++;
+      last_us = timer0_us();
+      break;
+    case 4:
+      // enable pulse must be >450ns
+      if(last_us + 100 == timer0_us())
+        phase++;
+      break;
+    case 5:
+      pulse_enable_low();
+      phase++;
+      last_us = timer0_us();
+      break;
+    case 6:
+      // commands need > 37us to settle
+      if(last_us + 400 == timer0_us())
+        phase++;
+      break;
+    case 7:
+      phase = 0;
+      return 1;
+
+
+  }
+
+
+  return 0;
+
+}
+
+
+
+
+
+
 
 void lcd_clear()
 {
-  must_clear = 1;
-}
-
-void lcd_do_clear()
-{
   uint8_t i;
-  command(LCD_CLEARDISPLAY);  // clear display, set cursor position to zero
   cursor = 0;
   for (i=0; i<32;i++)
     text_buffer[i] = 0;
 
-  delay(2);  // this command takes a long time!
+  has_to_clear = 1;
 }
+
 
 void lcd_print_int_at(  uint32_t value, uint8_t size,uint8_t row,uint8_t col)
 {
@@ -143,66 +418,8 @@ void lcd_print_at(char *str,uint8_t row,uint8_t col)
   lcd_print(str);
 }
 
-//refresca el lcd con el buffer
-//solo donde sea necesario
-void lcd_refresh(void){
-
-  uint8_t i;
-
-  // clears takes precedence
-  if (must_clear){
-    must_clear = 0;
-    lcd_do_clear();
-  }
-
-  if (dirty_mask!=0x00){
-    for (i=0; i<32;i++){
-      if(dirty_mask & (0x01<<i)){ //matches a dirty char
-        //should_set_cursor
-        if(cursor!=i)
-          set_cursor(i>15,i%16);
-        write(text_buffer[i]);
-      }
-    }
-    dirty_mask=0x00;
-    return;
-  }
 
 
-}
-
-
-//definicion de funciones privadas
-static void delay(uint32_t ms)
-{
-  timer1_delay_ms(ms);
-}
-
-
-
-static void set_cursor(uint8_t row, uint8_t col)
-{
-  int offset = 0x00;;
-  if ( row > 0 )
-    offset = 0x40;
-
-  command(LCD_SETDDRAMADDR | (offset + col));
-}
-
-static void command(uint8_t value) {
-  send(value, LCD_LOW);
-}
-
-static void write(uint8_t value) {
-  send(value, LCD_HIGH);
-}
-
-// write either command or data, with automatic 4/8-bit selection
-static void send(uint8_t value, uint8_t mode) {
-  gpio_set_pin(LCD_PINRS, mode);
-  write_4_bits(value>>4);
-  write_4_bits(value);
-}
 
 static void write_4_bits(uint8_t value) {
 
@@ -211,15 +428,23 @@ static void write_4_bits(uint8_t value) {
   gpio_set_pin(LCD_PIND6, (value >> 2) & 0x01);
   gpio_set_pin(LCD_PIND7, (value >> 3) & 0x01);
 
-  pulse_enable();
 }
 
-static void pulse_enable(void) {
+static void pulse_enable_low(void) {
   gpio_set_pin(LCD_PINE, LCD_LOW);
-  delay(1);
-  gpio_set_pin(LCD_PINE, LCD_HIGH);
-  delay(1);    // enable pulse must be >450ns
-  gpio_set_pin(LCD_PINE, LCD_LOW);
-  delay(1);   // commands need > 37us to settle
 }
+
+static void pulse_enable_high(void) {
+  gpio_set_pin(LCD_PINE, LCD_HIGH);
+}
+
+
+static void mode_low(void) {
+  gpio_set_pin(LCD_PINRS, LCD_LOW);
+}
+
+static void mode_high(void) {
+  gpio_set_pin(LCD_PINRS, LCD_HIGH);
+}
+
 

@@ -95,6 +95,9 @@
 #define PROTOCOL_H
 
 
+#include <stdint.h>
+#include <stdlib.h>
+
 // macros have to be outside extern "C" block
 // to be defined on other sources that includes this file
 #define MAX_PACKET_SIZE 128
@@ -107,26 +110,7 @@
 
 
 
-/*
-Multi Language Header
-Allows cpp to be C-compatible
-And includes either cinttypes or inttypes.h
-for compatible int data types
-*/
-#ifdef __cplusplus
-#include <cinttypes>
-extern "C" {
-#else
-#include <stdint.h>
-#endif
-#include <stdlib.h>
-
-/*
-End of Multi Language Header
-*/
-
-
-/*START OF C/C++ COMMON CODE - (do not code aboce this line)*/
+/*START OF C/C++ COMMON CODE - (do not code above this line)*/
 
 
 
@@ -215,17 +199,6 @@ uint8_t* messageData(message_hdr_t* message);
 
 
 /*END OF C/C++ COMMON CODE - (do not code below this line)*/
-
-/*
-Close c++ bracket for Multi Language Header
-*/
-#ifdef __cplusplus
-}
-#endif
-/*
-End of Close c++ bracket for Multi Language Header
-*/
-
 
 
 #endif // PROTOCOL_H
