@@ -126,7 +126,7 @@ void keyboard_handle_key(uint8_t key){
     fsm_playback_change(FSM_PLAYBACK_STATE_PREVIOUS);
   }
   else if(key == 2){
-	  if(fsm_playback_state()==FSM_PLAYBACK_STATE_PLAY)
+	  if(fsm_playback_state()==FSM_PLAYBACK_STATE_PLAYING)
 	  {
 		  fsm_playback_change(FSM_PLAYBACK_STATE_PAUSE);
 	  }

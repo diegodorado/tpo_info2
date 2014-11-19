@@ -8,15 +8,8 @@
 #include "timers.h"
 #include "drivers.h"
 
-#define SOUND_DATA_LENGTH 16000
-static char SOUND_DATA_DATA[SOUND_DATA_LENGTH];
-
 void timer0_setup(void)
 {
-
-  gpio_set_dir(0,22, 1);
-  gpio_set_pin(0,22,1);
-
 
   PCONP |= (1 << 1);   // Habilitar Timer 0 Pag 63
   PCLKSEL0 &= ~(3 << 2);  // Clock for timer: CCLK/4.... 25MHz
@@ -53,30 +46,12 @@ uint32_t timer0_us()
 void  timer0_mr0_interrupt()
 {
   us++;
-  /*
-  static volatile int counter = 0;
-  static volatile int sample_index = 0;
-  static volatile unsigned char last_sample;
-
-  if(!counter--){
-    counter = 124;
-    last_sample = SOUND_DATA_DATA[sample_index];
-    if (++sample_index >= SOUND_DATA_LENGTH){
-      sample_index = 0;
-      gpio_set_pin(0,22,!gpio_get_pin(0,22,1));
-    }
-  }
-
-  dac_set_value(last_sample);
-*/
-
+  audio_us_tick();
 }
 
-
-
-
+// blocking delay... only for setup
 void  timer0_delay_us(uint32_t us)
 {
-  uint32_t last_us = timer0_us();
-  while(last_us + us != timer0_us());
+  uint32_t since = timer0_us();
+  while ((uint32_t) (timer0_us() - since) < us );
 }

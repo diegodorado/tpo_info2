@@ -71,19 +71,19 @@ static void idle( void)
     message = client_get_message();
     if ( message ==NULL)
     {
-      lcd_print_at("ERROR NULL MSG",1,0);
+      lcd_print_at("ERROR NULL MSG1",1,0);
     }
     else
     {
       if( message->msg_type== MESSAGE_HANDSHAKE)
       {
-        //lcd_print_at("HANDSHAKE!",1,0);
+        lcd_print_at("HANDSHAKE!",1,0);
         client_send_status_response(message, STATUS_OK);
         fsm_client_change(FSM_CLIENT_STATE_CONNECTED);
       }
       else
       {
-        lcd_print_at("MSG NOT EXPT!",1,0);
+        lcd_print_at("MSG NOT EXPT!1",1,0);
       }
     }
 
@@ -106,11 +106,16 @@ static void connected( void)
     message = client_get_message();
     if ( message ==NULL)
     {
-      lcd_print_at("ERROR NULL MSG",1,0);
+      lcd_print_at("ERROR NULL MSG2",1,0);
     }
     else
     {
       switch(message->msg_type){
+        case MESSAGE_HANDSHAKE:
+          // client is checking the connection is still alive
+          // just respond, dont change the state
+          client_send_status_response(message, STATUS_OK);
+
         case MESSAGE_INFO_STATUS:
           last_request = message;
           fsm_client_change(FSM_CLIENT_STATE_PROCESSING_STATUS);
@@ -125,7 +130,7 @@ static void connected( void)
           break;
         default:
           free(message);
-          lcd_print_at("MSG NOT EXPT!",1,0);
+          lcd_print_at("MSG NOT EXPT!2",1,0);
           break;
       }
 
@@ -209,12 +214,12 @@ static void processing_fileheader( void)
   int i;
   fileheader_data_t* header;
   header = (fileheader_data_t*) messageData(last_request);
-  //lcd_print_at("F.Req: ",0,0);
-  //for(i=0;i<sizeof(header->filename);i++)
-    //lcd_print_char(header->filename[i]);
+  lcd_print_at("F.Req: ",0,0);
+  for(i=0;i<sizeof(header->filename);i++)
+    lcd_print_char(header->filename[i]);
 
-  //lcd_print_at("Chunks: ",1,0);
-  //lcd_print_int_at(header->chunks_count,8,1,15);
+  lcd_print_at("Chunks: ",1,0);
+  lcd_print_int_at(header->chunks_count,8,1,15);
 
   if(header->chunks_count>700)
   {
@@ -244,7 +249,7 @@ static void processing_filechunks( void)
     message = client_get_message();
     if ( message ==NULL)
     {
-      lcd_print_at("ERROR NULL MSG",1,0);
+      lcd_print_at("ERROR NULL MSG4",1,0);
     }
     else
     {
@@ -256,7 +261,7 @@ static void processing_filechunks( void)
       }
       else
       {
-        lcd_print_at("MSG NOT EXPT!",1,0);
+        lcd_print_at("MSG NOT EXPT!4",1,0);
       }
 
     }
@@ -287,13 +292,17 @@ static void process_chunk( message_hdr_t* request)
 
   lcd_print_int_at(chunk.chunk_id,5,0,15);
 
-  //lcd_print_char_at('%',1,0);
+  lcd_print_char_at('%',1,0);
   chunks_left--;
-  //lcd_print_int_at((chunks_count-chunks_left)*100/chunks_count,3,1,3);
+  lcd_print_int_at((chunks_count-chunks_left)*100/chunks_count,3,1,3);
 
-  if(chunks_left<500)
+  //fill the audio buffer with raw data
+  audio_fill_audio_buffer(messageData(request)+sizeof(chunk.chunk_id), request->data_length-sizeof(chunk.chunk_id));
+
+
+  if(chunks_left==0)
   {
-    lcd_print_at("DONE!",1,0);
+    lcd_print_at("TRANSFER COMPLETE!",0,0);
     fsm_client_change(FSM_CLIENT_STATE_CONNECTED);
   }
 

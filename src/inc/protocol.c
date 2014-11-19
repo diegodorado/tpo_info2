@@ -200,6 +200,8 @@ static uint8_t validate_buffer_checksum()
 */
 buffer_status_t messagesBufferProcess ( void)
 {
+  if(raw_rx_buffer_count()==0)
+    return buffer_status;
 
   //check if an error ocurred last time
   if(buffer_status==BUFFER_ERROR_SOF_EXPECTED
