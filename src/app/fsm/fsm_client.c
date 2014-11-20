@@ -218,8 +218,8 @@ static void processing_fileheader( void)
   for(i=0;i<sizeof(header->filename);i++)
     lcd_print_char(header->filename[i]);
 
-  lcd_print_at("Chunks: ",1,0);
-  lcd_print_int_at(header->chunks_count,8,1,15);
+  lcd_print_at("SR: ",1,0);
+  lcd_print_int_at(header->sample_rate,8,1,10);
 
   if(header->chunks_count>700)
   {
@@ -297,7 +297,7 @@ static void process_chunk( message_hdr_t* request)
   lcd_print_int_at((chunks_count-chunks_left)*100/chunks_count,3,1,3);
 
   //fill the audio buffer with raw data
-  audio_fill_audio_buffer(messageData(request)+sizeof(chunk.chunk_id), request->data_length-sizeof(chunk.chunk_id));
+  audio_fill_audio_buffer(messageData(request)+sizeof(uint32_t)*2, request->data_length-sizeof(uint32_t)*2);
 
 
   if(chunks_left==0)

@@ -178,7 +178,11 @@ typedef struct
 } timer_t;
 
 
+
 #define  TIMER0 ( ( timer_t  * ) 0x40004000UL )
+#define  TIMER1 ( ( timer_t  * ) 0x40008000UL )
+#define  TIMER2 ( ( timer_t  * ) 0x40090000UL )
+#define  TIMER3 ( ( timer_t  * ) 0x40094000UL )
 
 
 /*

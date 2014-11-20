@@ -16,6 +16,6 @@ void audio_set_sample_rate(uint32_t srate);
 uint8_t audio_fill_audio_buffer(uint8_t* sample_start, uint8_t length);
 void audio_play();
 void audio_stop();
-void audio_us_tick();
+void audio_play_sample();
 
 #endif /* AUDIO_H_ */

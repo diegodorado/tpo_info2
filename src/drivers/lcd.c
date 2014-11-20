@@ -35,8 +35,6 @@ static uint8_t write4bits( uint8_t value);
 void lcd_setup(void)
 {
 
-  timer0_setup();
-
   // When the display powers up, it is configured as follows:
   //
   // 1. Display clear

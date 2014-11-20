@@ -17,8 +17,11 @@ void TIMER0_IRQHandler(void){
 }
 
 void TIMER1_IRQHandler(void){
-  //todo: implementar interrupcion
-  while(1);
+  if ( TIMER1->IR_MR0 )
+  {
+    TIMER1->IR_MR0 = 1;  /* Writing a HIGH clears the interrupt flag */
+    timer1_mr0_interrupt();
+  }
 
 }
 

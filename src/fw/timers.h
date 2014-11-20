@@ -17,4 +17,8 @@ uint32_t timer0_us(void);
 void  timer0_delay_us(uint32_t us);
 
 
+void timer1_setup(void);
+void  timer1_mr0_interrupt(void);
+
+
 #endif /* TIMERS_H_ */
