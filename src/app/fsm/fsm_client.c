@@ -39,6 +39,11 @@ static void (* const state_table[])(void) = {
 };
 
 
+fsm_client_state_t fsm_client_state()
+{
+  return state;
+}
+
 void fsm_client_update(void)
 {
   // implementada con punteros a funcion

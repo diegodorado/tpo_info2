@@ -22,5 +22,6 @@ typedef enum {
 
 void fsm_client_update(void);
 void fsm_client_change(fsm_client_state_t);
+fsm_client_state_t fsm_client_state();
 
 #endif /* FSM_CLIENT_H_ */

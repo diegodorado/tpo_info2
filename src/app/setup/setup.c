@@ -15,12 +15,10 @@ void setup(void){
   // LCD es inmediato para mostrar posibles errores
   lcd_setup(); // inicializar LCD
   keyboard_setup(); //inicializar Teclado
-  //storage_setup(); //inicializar almacenamiento (tarjeta SD)
+  storage_setup(); //inicializar almacenamiento (tarjeta SD)
   client_setup(); // inicializar cliente remoto (UART)
 
-  lcd_print_at("STARTED.",0,0);
   audio_setup(); // inicializar AUDIO (DAC/DMA)
-  lcd_print_at("READY.",1,0);
 
 }
 

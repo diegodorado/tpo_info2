@@ -14,19 +14,22 @@
 
 
 
-#define SOUND_DATA_LENGTH 24000
+#define SOUND_DATA_LENGTH 4096
 static volatile uint8_t SOUND_DATA_DATA[SOUND_DATA_LENGTH];
 static volatile uint32_t sample_rate;
 static volatile uint8_t playing = 0;
+
+static void audio_gen_sine_wave(void);
+
 
 void audio_setup(void)
 {
   dac_setup();
   gpio_set_dir(0,22, 1);
-  audio_gen_sine_wave();
+  //audio_gen_sine_wave();
 }
 
-void audio_gen_sine_wave(void)
+static void audio_gen_sine_wave(void)
 {
   uint32_t freq,sample_index = 0;
   int i;
@@ -102,8 +105,6 @@ void audio_play_sample()
   static volatile uint32_t sample_index = 0;
   uint8_t sample;
 
-//    gpio_set_pin(0,22,!gpio_get_pin(0,22,1));
-
   if(!playing)
     return;
 
@@ -112,6 +113,7 @@ void audio_play_sample()
 
   if (++sample_index >= SOUND_DATA_LENGTH){
     sample_index = 0;
+    gpio_set_pin(0,22,!gpio_get_pin(0,22,1)); // blink when buffer restart
   }
   dac_set_value(sample*4); // shift volume, since DAC is 10bit, and data is 8bit
 
