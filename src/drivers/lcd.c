@@ -34,7 +34,7 @@ static uint8_t write(uint8_t value);
 static uint8_t write4bits( uint8_t value);
 
 const  unsigned char log[]={
-//0
+//0 draw pause
 0b00011011,
 0b00011011,
 0b00011011,
@@ -43,7 +43,7 @@ const  unsigned char log[]={
 0b00011011,
 0b00011011,
 0b00011011,
-//1
+//1 draw rewind
 0b00000001,
 0b00000010,
 0b00000100,
@@ -52,7 +52,7 @@ const  unsigned char log[]={
 0b00000100,
 0b00000010,
 0b00000001,
-//2
+//2  logo utn
 0b00011110,
 0b00011110,
 0b00011110,
@@ -61,7 +61,7 @@ const  unsigned char log[]={
 0b00000011,
 0b00011111,
 0b00011111,
-//3
+//3 logo utn
 0b00011111,
 0b00011111,
 0b00000011,
@@ -70,7 +70,7 @@ const  unsigned char log[]={
 0b00011110,
 0b00011110,
 0b00011110,
-//4
+//4 logo utn
 0b00001111,
 0b00001111,
 0b00001111,
@@ -79,7 +79,7 @@ const  unsigned char log[]={
 0b00011000,
 0b00011111,
 0b00011111,
-//5
+//5 logo utn
 0b00011111,
 0b00011111,
 0b00011000,
@@ -88,7 +88,7 @@ const  unsigned char log[]={
 0b00001111,
 0b00001111,
 0b00001111,
-//6
+//6 draw ff
 0b00010000,
 0b00001000,
 0b00000100,
@@ -97,7 +97,7 @@ const  unsigned char log[]={
 0b00000100,
 0b00001000,
 0b00010000,
-//7
+//7   draw play
 0b00010000,
 0b00011000,
 0b00011100,
@@ -533,9 +533,9 @@ void draw_example(void){
     put_lcd(0,5,"UTN FRBA");
 /*
 write(0x20);
-write(0x06);
+write(0x06); //draw fforward
 write(0x20);
-write(0x00);
+write(0x00);  //draw pause
 */
 
     pos(1,0);
@@ -546,8 +546,8 @@ write(0x00);
     put_lcd(1,5,"Info 2");
     /*
     write(0x20);
-    write(0x07);
+    write(0x07);  //draw play
     write(0x20);
-    write(0x01);
+    write(0x01);  //draw rewind
     */
 }
