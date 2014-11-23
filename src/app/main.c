@@ -9,6 +9,7 @@ int main(void)
   //inicializacion del equipo
   setup();
   draw_example();
+printf("Debug Kit info2\n");
   // test de escritura en sd: escribe "0123456789" en los primeros bytes de la sd
   // devuelve 0 si no hubieron errores
   //ssd_result = sd_card_write_test("0123456789");
@@ -18,10 +19,15 @@ int main(void)
   // test de lectura: lee los primeros 16 bytes de la sd y lo guarda en dataread
   // devuelve 0 si no hay errores
   // imprime el resultado en la fila superior del LCD
-  ssd_result = sd_card_read_test(data_read,16);
-  lcd_print_at(data_read,0,0);
-  lcd_print_at("                ",1,0);
 
+  ssd_result = sd_card_read_test(data_read,16);
+#if defined (LCD_2X16_NO_FSM)
+  put_lcd(data_read,0,0);
+  put_lcd((uint8_t)ssd_result,1,0);
+#else
+  lcd_print_at(data_read,0,0);
+  lcd_print_at(ssd_result,1,0);
+#endif
 
  	while(1){
  	  lcd_refresh(); // otro formato... pero es una FSM (con corutinas)

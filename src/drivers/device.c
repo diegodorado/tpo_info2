@@ -88,6 +88,7 @@ void turn_rgb_led_off(void){
   gpio_set_dir(2,1,1); // P2.1 : salida
   gpio_set_dir(2,2,1);//P2.2 : salida
   gpio_set_dir(2,3,1); //P2.3 : salida
+  gpio_set_dir(0,22,1); //P0.22 out
 
   gpio_set_pin(2,1,0);
   gpio_set_pin(2,2,0);

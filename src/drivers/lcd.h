@@ -6,6 +6,10 @@
 #include "sysdefs.h"
 #include "drivers.h"
 
+#define LCD_2X16_NO_FSM
+//#define LCD_2X16_FSM
+
+
 
 #define LCD_LOW 0
 #define LCD_HIGH 1
@@ -64,6 +68,7 @@ void lcd_print_char_at(char ,uint8_t,uint8_t);
 void lcd_print_int_at(uint32_t value, uint8_t size,uint8_t row,uint8_t col);
 void lcd_refresh(void);
 void draw_example(void);
+void put_lcd(  char *s,uint8_t  y, uint8_t x );
 
 
 

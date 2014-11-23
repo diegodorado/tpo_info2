@@ -21,11 +21,13 @@ void ssp_setup(void)
 void ssp_ssel_set_low()
 {
   gpio_set_pin(0, 6, 0);
+  gpio_set_pin(0,22, 0);
 }
 
 void ssp_ssel_set_high()
 {
   gpio_set_pin(0, 6, 1);
+  gpio_set_pin(0,22, 1);
 }
 
 

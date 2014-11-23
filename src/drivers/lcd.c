@@ -1,7 +1,6 @@
 #include "lcd.h"
 
-#define LCD_2X16_NO_FSM
-//#define LCD_2X16_FSM
+
 
 //definicion de funciones publicas
 static volatile uint8_t has_to_clear = 0; //if set to 1 will clear lcd on lcd_refresh call
@@ -20,7 +19,7 @@ static void mode_high(void);
 static void init_draw(void);
 static void pos(uint8_t y,uint8_t x);
 static void pulse(void);
-static void put_lcd(uint8_t  y, uint8_t x ,   char *s);
+
 
 
 
@@ -32,6 +31,9 @@ static uint8_t refresh_chars(void);
 static uint8_t command(uint8_t value);
 static uint8_t write(uint8_t value);
 static uint8_t write4bits( uint8_t value);
+
+
+
 
 const  unsigned char log[]={
 //0 draw pause
@@ -516,21 +518,22 @@ for (i=0;i<=8*8;i++){
     }
 }
 
-static void put_lcd(uint8_t  y, uint8_t x ,   char *s){
+void put_lcd(  char *s,uint8_t  y, uint8_t x ){
 pos(y,x);
 for(  ; *s!='\0' ; s++ )
  write(*s);
 }
 
 void draw_example(void){
-    clear();
+#if defined (LCD_2X16_NO_FSM)
+  clear();
 
     pos(0,0);
     write(0x20);
     write(0x2);
     write(255);
     write(0x4);
-    put_lcd(0,5,"UTN FRBA");
+    put_lcd("UTN FRBA",0,5);
 /*
 write(0x20);
 write(0x06); //draw fforward
@@ -543,7 +546,7 @@ write(0x00);  //draw pause
     write(0x03);
     write(255);
     write(0x05);
-    put_lcd(1,5,"Info 2");
+    put_lcd("Info 2",1,5);
     /*
     write(0x20);
     write(0x07);  //draw play
@@ -552,4 +555,6 @@ write(0x00);  //draw pause
     */
 
     timer0_delay_us(1000*3000);
+    clear();
+#endif
 }
