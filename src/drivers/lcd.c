@@ -1,5 +1,7 @@
 #include "lcd.h"
 
+#define LCD_2X16_NO_FSM
+//#define LCD_2X16_FSM
 
 //definicion de funciones publicas
 static volatile uint8_t has_to_clear = 0; //if set to 1 will clear lcd on lcd_refresh call
@@ -15,6 +17,13 @@ static void pulse_enable_high(void);
 static void mode_low(void);
 static void mode_high(void);
 
+static void init_draw(void);
+static void pos(uint8_t y,uint8_t x);
+static void pulse(void);
+static void put_lcd(uint8_t  y, uint8_t x ,   char *s);
+
+
+
 
 static uint8_t clear();
 static uint8_t set_cursor(uint8_t row, uint8_t col);
@@ -24,13 +33,87 @@ static uint8_t command(uint8_t value);
 static uint8_t write(uint8_t value);
 static uint8_t write4bits( uint8_t value);
 
+const  unsigned char log[]={
+//0
+0b00011011,
+0b00011011,
+0b00011011,
+0b00011011,
+0b00011011,
+0b00011011,
+0b00011011,
+0b00011011,
+//1
+0b00000001,
+0b00000010,
+0b00000100,
+0b00001000,
+0b00001000,
+0b00000100,
+0b00000010,
+0b00000001,
+//2
+0b00011110,
+0b00011110,
+0b00011110,
+0b00001111,
+0b00000111,
+0b00000011,
+0b00011111,
+0b00011111,
+//3
+0b00011111,
+0b00011111,
+0b00000011,
+0b00000111,
+0b00001111,
+0b00011110,
+0b00011110,
+0b00011110,
+//4
+0b00001111,
+0b00001111,
+0b00001111,
+0b00011110,
+0b00011100,
+0b00011000,
+0b00011111,
+0b00011111,
+//5
+0b00011111,
+0b00011111,
+0b00011000,
+0b00011100,
+0b00011110,
+0b00001111,
+0b00001111,
+0b00001111,
+//6
+0b00010000,
+0b00001000,
+0b00000100,
+0b00000010,
+0b00000010,
+0b00000100,
+0b00001000,
+0b00010000,
+//7
+0b00010000,
+0b00011000,
+0b00011100,
+0b00011110,
+0b00011110,
+0b00011100,
+0b00011000,
+0b00010000,
+};
 
 
 
 
 
 
-
+#if defined(LCD_2X16_FSM)
 
 void lcd_setup(void)
 {
@@ -100,23 +183,6 @@ void lcd_setup(void)
 }
 
 
-
-void lcd_refresh(void)
-{
-
-  if(has_to_clear)
-  {
-    clear();
-  }
-  else
-  {
-    refresh_chars();
-  }
-
-
-}
-
-
 static uint8_t clear()
 {
   static uint32_t since;
@@ -136,6 +202,116 @@ static uint8_t clear()
 
 
 }
+
+
+static uint8_t command(uint8_t value) {
+
+  crBegin;
+  mode_low();
+
+  while (!write4bits(value>>4))
+    crReturn(0);
+
+  while (!write4bits(value))
+    crReturn(0);
+
+  crFinish;
+  return 1;
+}
+
+
+static uint8_t write(uint8_t value) {
+  crBegin;
+  mode_high();
+
+  while (!write4bits(value>>4))
+    crReturn(0);
+
+  while (!write4bits(value))
+    crReturn(0);
+
+  crFinish;
+  return 1;
+}
+
+
+
+#endif
+
+
+#if defined (LCD_2X16_NO_FSM)
+
+void lcd_setup(void){
+  gpio_set_dir(LCD_PIND4, 1);
+  gpio_set_dir(LCD_PIND5, 1);
+  gpio_set_dir(LCD_PIND6, 1);
+  gpio_set_dir(LCD_PIND7, 1);
+  gpio_set_dir(LCD_PINRS, 1);
+  gpio_set_dir(LCD_PINE, 1);
+  timer0_delay_us(9000);
+  gpio_set_pin(LCD_PINE, LCD_LOW);
+  gpio_set_pin(LCD_PINRS, LCD_LOW);
+  write_4_bits(0b0011);
+  pulse();
+  timer0_delay_us(2500);
+  pulse();
+  timer0_delay_us(500);
+  pulse();
+  write_4_bits(0x02);
+  pulse();
+  command(0x28);
+  command(0x0C);
+  command(0x06);
+  clear();
+  init_draw();
+}
+
+
+static uint8_t command(uint8_t value) {
+  mode_low();
+  write_4_bits((value>>4)&0x0F);
+  pulse();
+  write_4_bits(value&0x0F);
+  pulse();
+   return 1;
+}
+
+
+static uint8_t write(uint8_t value) {
+  mode_high();
+  write_4_bits((value>>4)&0x0F);
+  pulse();
+  write_4_bits(value&0x0F);
+  pulse();
+  mode_low();
+  timer0_delay_us(65);
+  return 1;
+}
+
+
+static uint8_t clear(void)
+{
+command(LCD_CLEARDISPLAY);
+  return 1;
+}
+
+#endif
+
+void lcd_refresh(void)
+{
+
+  if(has_to_clear)
+  {
+    clear();
+  }
+  else
+  {
+    refresh_chars();
+  }
+
+
+}
+
 
 
 
@@ -200,35 +376,6 @@ static uint8_t refresh_chars(void){
 
 
 
-static uint8_t command(uint8_t value) {
-
-  crBegin;
-  mode_low();
-
-  while (!write4bits(value>>4))
-    crReturn(0);
-
-  while (!write4bits(value))
-    crReturn(0);
-
-  crFinish;
-  return 1;
-}
-
-
-static uint8_t write(uint8_t value) {
-  crBegin;
-  mode_high();
-
-  while (!write4bits(value>>4))
-    crReturn(0);
-
-  while (!write4bits(value))
-    crReturn(0);
-
-  crFinish;
-  return 1;
-}
 
 static uint8_t write4bits( uint8_t value)
 {
@@ -268,7 +415,7 @@ static uint8_t write4bits( uint8_t value)
 
 static void write_4_bits(uint8_t value) {
 
-  gpio_set_pin(LCD_PIND4, (value >> 0) & 0x01);
+  gpio_set_pin(LCD_PIND4, value  & 0x01);
   gpio_set_pin(LCD_PIND5, (value >> 1) & 0x01);
   gpio_set_pin(LCD_PIND6, (value >> 2) & 0x01);
   gpio_set_pin(LCD_PIND7, (value >> 3) & 0x01);
@@ -291,13 +438,6 @@ static void mode_low(void) {
 static void mode_high(void) {
   gpio_set_pin(LCD_PINRS, LCD_HIGH);
 }
-
-
-
-
-
-
-
 
 
 
@@ -350,4 +490,64 @@ void lcd_print_at(char *str,uint8_t row,uint8_t col)
   lcd_print(str);
 }
 
+static void pulse(void){
+  pulse_enable_high();
+  timer0_delay_us(750);
+  pulse_enable_low();
+  timer0_delay_us(50);
+}
 
+static void pos(uint8_t y,uint8_t x){
+
+  if(y==0)x=x+0x00;
+  if(y==1)x=x+0x40;
+  if(y==2)x=x+0xC0;
+  x|=0b10000000;
+  command(x);
+}
+
+static void init_draw(void){
+char cgram =0x40 ;
+int i=0;
+
+for (i=0;i<=8*8;i++){
+    command(cgram+i);
+    write(log[i]);
+    }
+}
+
+static void put_lcd(uint8_t  y, uint8_t x ,   char *s){
+pos(y,x);
+for(  ; *s!='\0' ; s++ )
+ write(*s);
+}
+
+void draw_example(void){
+    clear();
+
+    pos(0,0);
+    write(0x20);
+    write(0x2);
+    write(255);
+    write(0x4);
+    put_lcd(0,5,"UTN FRBA");
+/*
+write(0x20);
+write(0x06);
+write(0x20);
+write(0x00);
+*/
+
+    pos(1,0);
+    write(0x20);
+    write(0x03);
+    write(255);
+    write(0x05);
+    put_lcd(1,5,"Info 2");
+    /*
+    write(0x20);
+    write(0x07);
+    write(0x20);
+    write(0x01);
+    */
+}

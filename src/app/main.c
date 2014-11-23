@@ -19,12 +19,13 @@ int main(void)
   // devuelve 0 si no hay errores
   // imprime el resultado en la fila superior del LCD
   ssd_result = sd_card_read_test(data_read,16);
-  lcd_print_at(data_read,0,0);
+  //lcd_print_at(data_read,0,0);
 
+  draw_example();
  	while(1){
- 	  lcd_refresh(); // otro formato... pero es una FSM (con corutinas)
- 	  fsm_client_update();  // ejecuta un tick de la maquina de estados "cliente"
- 	  fsm_playback_update();  // ejecuta un tick de la maquina de estados "playback"
+ 	 // lcd_refresh(); // otro formato... pero es una FSM (con corutinas)
+ 	  //fsm_client_update();  // ejecuta un tick de la maquina de estados "cliente"
+ 	  //fsm_playback_update();  // ejecuta un tick de la maquina de estados "playback"
  	}
 
 	 //esta devolucion es para satisfacer al compilador, aunque nunca suceda
