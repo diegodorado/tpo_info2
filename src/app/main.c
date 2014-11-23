@@ -9,7 +9,8 @@ int main(void)
   //inicializacion del equipo
   setup();
   draw_example();
-printf("Debug Kit info2\n");
+  puts_lcd("                ",0,0);
+  puts_lcd("                ",1,0);
   // test de escritura en sd: escribe "0123456789" en los primeros bytes de la sd
   // devuelve 0 si no hubieron errores
   //ssd_result = sd_card_write_test("0123456789");
@@ -20,17 +21,24 @@ printf("Debug Kit info2\n");
   // devuelve 0 si no hay errores
   // imprime el resultado en la fila superior del LCD
 
-  ssd_result = sd_card_read_test(data_read,16);
+ssd_result = sd_card_read_test(data_read,16);
+
 #if defined (LCD_2X16_NO_FSM)
-  put_lcd(data_read,0,0);
-  put_lcd((uint8_t)ssd_result,1,0);
+
+  puts_lcd(data_read,0,0);
+  putc_lcd(ssd_result+48,1,5);
+
+  //lcd_print_at(aux,1,5);
+  uart0_tx_push("Debug Kit info2\n");
+  uart0_tx_push ( ssd_result+48 );
+  uart0_tx_push ("\r\n" );
 #else
   lcd_print_at(data_read,0,0);
   lcd_print_at(ssd_result,1,0);
 #endif
 
  	while(1){
- 	  lcd_refresh(); // otro formato... pero es una FSM (con corutinas)
+ 	  	  lcd_refresh(); // otro formato... pero es una FSM (con corutinas)
  	  fsm_client_update();  // ejecuta un tick de la maquina de estados "cliente"
  	  fsm_playback_update();  // ejecuta un tick de la maquina de estados "playback"
  	}

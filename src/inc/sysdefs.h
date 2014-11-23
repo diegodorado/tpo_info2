@@ -168,6 +168,13 @@ typedef union {
 //#define USE_UART0
 #define USE_UART1
 
+//#define BAUDRATE_2400
+//#define BAUDRATE_9600
+//#define BAUDRATE_19200
+#define BAUDRATE_38400
+//#define BAUDRATE_115200
+
+
 //KEYBOARD
 //#define USE_SW1_WITH_INTERRUPTS
 //#define USE_SW4_WITH_INTERRUPTS

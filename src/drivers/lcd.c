@@ -17,19 +17,20 @@ static void mode_low(void);
 static void mode_high(void);
 
 static void init_draw(void);
-static void pos(uint8_t y,uint8_t x);
+
 static void pulse(void);
 
 
 
-
+static void pos(uint8_t y,uint8_t x);
+static uint8_t write(uint8_t value);
 
 static uint8_t clear();
 static uint8_t set_cursor(uint8_t row, uint8_t col);
 static uint8_t set_cursor_i(uint8_t i);
 static uint8_t refresh_chars(void);
 static uint8_t command(uint8_t value);
-static uint8_t write(uint8_t value);
+
 static uint8_t write4bits( uint8_t value);
 
 
@@ -279,7 +280,7 @@ static uint8_t command(uint8_t value) {
 }
 
 
-static uint8_t write(uint8_t value) {
+uint8_t write(uint8_t value) {
   mode_high();
   write_4_bits((value>>4)&0x0F);
   pulse();
@@ -499,11 +500,14 @@ static void pulse(void){
   timer0_delay_us(50);
 }
 
-static void pos(uint8_t y,uint8_t x){
+void pos(uint8_t y,uint8_t x){
 
-  if(y==0)x=x+0x00;
-  if(y==1)x=x+0x40;
-  if(y==2)x=x+0xC0;
+  if(y==0){x=x+0x00;}
+  else if(y==1)x=x+0x40;
+  else{
+        x=x+0x00;
+      }
+
   x|=0b10000000;
   command(x);
 }
@@ -518,10 +522,15 @@ for (i=0;i<=8*8;i++){
     }
 }
 
-void put_lcd(  char *s,uint8_t  y, uint8_t x ){
+void puts_lcd(  char *s,uint8_t  y, uint8_t x ){
 pos(y,x);
-for(  ; *s!='\0' ; s++ )
- write(*s);
+  for(  ; *s!='\0' ; s++ )
+   write(*s);
+}
+
+void putc_lcd(  char c,uint8_t  y, uint8_t x ){
+  pos(y,x);
+  write(c);
 }
 
 void draw_example(void){
@@ -533,7 +542,7 @@ void draw_example(void){
     write(0x2);
     write(255);
     write(0x4);
-    put_lcd("UTN FRBA",0,5);
+    puts_lcd("UTN FRBA",0,5);
 /*
 write(0x20);
 write(0x06); //draw fforward
@@ -546,7 +555,7 @@ write(0x00);  //draw pause
     write(0x03);
     write(255);
     write(0x05);
-    put_lcd("Info 2",1,5);
+    puts_lcd("Info 2",1,5);
     /*
     write(0x20);
     write(0x07);  //draw play
@@ -554,7 +563,7 @@ write(0x00);  //draw pause
     write(0x01);  //draw rewind
     */
 
-    timer0_delay_us(1000*3000);
+    timer0_delay_us(500*3000);
     clear();
 #endif
 }
