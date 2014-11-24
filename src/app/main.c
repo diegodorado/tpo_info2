@@ -3,12 +3,11 @@
 
 int main(void)
 {
-
   uint8_t ssd_result;
   char data_read[16+1] = "abcdefghijklmnop";
   //inicializacion del equipo
   setup();
-  draw_example();
+ draw_example();
   puts_lcd("                ",0,0);
   puts_lcd("                ",1,0);
   // test de escritura en sd: escribe "0123456789" en los primeros bytes de la sd
@@ -27,11 +26,13 @@ ssd_result = sd_card_read_test(data_read,16);
 
   puts_lcd(data_read,0,0);
   putc_lcd(ssd_result+48,1,5);
+    #if defined(UART0)
+      uart0_string_tx("Debug Kit info2\n");
+      uart0_string_tx("ssd result =");
+      uart0_char_tx ( ssd_result+48 );
+      uart0_string_tx ("\r\n" );
+    #endif
 
-  //lcd_print_at(aux,1,5);
-  uart0_tx_push("Debug Kit info2\n");
-  uart0_tx_push ( ssd_result+48 );
-  uart0_tx_push ("\r\n" );
 #else
   lcd_print_at(data_read,0,0);
   lcd_print_at(ssd_result,1,0);

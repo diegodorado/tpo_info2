@@ -9,6 +9,7 @@ void ssp_setup(void)
   set_pin_sel(0,8,2);  // MISO
   set_pin_sel(0,7,2);  // SCK
   set_pin_sel(0,6,0);  // SSEL
+
   gpio_set_dir(0,6,1); // SSEL como GPIO (salida)
 
   PCLKSEL0 |= 1<<20;  //PCLK=CLCK
@@ -21,13 +22,13 @@ void ssp_setup(void)
 void ssp_ssel_set_low()
 {
   gpio_set_pin(0, 6, 0);
-  gpio_set_pin(0,22, 0);
+  gpio_set_pin(2,1, 0);
 }
 
 void ssp_ssel_set_high()
 {
   gpio_set_pin(0, 6, 1);
-  gpio_set_pin(0,22, 1);
+  gpio_set_pin(2,1, 1);
 }
 
 
@@ -57,7 +58,9 @@ void ssp_send_data(uint16_t dato)
 
   SSP1->DR = dato;
 
-  for(aux=0;aux<500;aux++);
+  aux=500;
+  while(aux--);
+//  for(aux=0;aux<500;aux++);
 
   while(SSP1->SR&4)
     aux = SSP1->DR;
@@ -74,8 +77,9 @@ uint16_t ssp_get_data(void)
   }
   //SSP1ICR = 0x03;
   SSP1->DR = 0xFF;
-
-  for(aux=0;aux<500;aux++);
+aux=500;
+while(aux--);
+//  for(aux=0;aux<500;aux++);
 
   while(!(SSP1->SR&4));
     return SSP1->DR;

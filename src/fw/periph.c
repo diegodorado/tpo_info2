@@ -10,7 +10,7 @@
  	\param [in] funcion:	selección de la funcion que tendra el pin  [0 - 3]
 	\return void
 */
-void set_pin_sel( uint8_t puerto , uint8_t pin ,uint8_t funcion )
+void  set_pin_sel( uint8_t puerto , uint8_t pin ,uint8_t funcion )
 {
 	puerto = puerto * 2 + pin / 16;
 	pin = ( pin % 16 ) * 2;

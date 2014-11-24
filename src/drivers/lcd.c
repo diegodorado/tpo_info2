@@ -563,7 +563,7 @@ write(0x00);  //draw pause
     write(0x01);  //draw rewind
     */
 
-    timer0_delay_us(500*3000);
+    timer0_delay_us(500*1000);
     clear();
 #endif
 }

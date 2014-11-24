@@ -21,12 +21,13 @@ void (* callbacks_queue[CALLBACKS_QUEUE_SIZE])(void);
 
 
 void systick_setup(void){
-  SYSTICK->STRELOAD  =  (uint32_t)((SYSTICK->STCALIB)-1);   // configurado para interrumpir cada 10 ms
+ // SYSTICK->STRELOAD  =  (uint32_t)((SYSTICK->STCALIB)-1);   // configurado para interrumpir cada 10 ms
+  SYSTICK->STRELOAD=(uint32_t) (0xF423F);
   SYSTICK->STCURR = 0;
   SYSTICK->ENABLE = 1;
   SYSTICK->TICKINT = 1;
   SYSTICK->CLKSOURCE = 1;
-  SYSTICK->STCTRL=7;
+  SYSTICK->STCTRL=3;
 }
 
 // llamada por isr_systick.c

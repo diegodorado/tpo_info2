@@ -50,5 +50,7 @@ void uart1_tx_push ( uint8_t);
 uint8_t uart1_tx_pop ( void);
 uint8_t uart1_tx_data_size (void);
 
+void uart0_char_tx( char);
+void uart0_string_tx ( char * str );
 
 #endif /* UART_H_ */

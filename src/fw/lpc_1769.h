@@ -243,7 +243,7 @@ typedef struct
     __R uart_iir_t IIR; // Registro de identificación de la interrupción de la UART1
     __W uint32_t FCR;              // Registro de control de la FIFO de la UART1
   };
-  __RW uint32_t LCR;                 // Line CONTROL Register de la UART1
+  __RW uint32_t LCR;                   // Line CONTROL Register de la UART1
   __R uint32_t RESERVED1;           // For alignement purposes
   __R uart_lsr_t LSR;                 // Line STATUS Register de la UART1
 

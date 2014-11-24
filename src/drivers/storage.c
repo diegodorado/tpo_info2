@@ -12,8 +12,7 @@ void storage_setup(void)
   //todo: implementar la inicializacion
 }
 
-uint8_t sd_card_test(void)
-{
+uint8_t sd_card_test(void){
   uint8_t buffer1[N_BLOCKS * 512], buffer2[N_BLOCKS * 512] = { 0 };
   uint32_t i;
   uint8_t result = 0;

@@ -1,5 +1,5 @@
 /*
- * uart.c
+b * uart.c
  *
  *  Created on: Sep 19, 2014
  *      Author: diego
@@ -37,21 +37,21 @@ void uart0_setup(void)
   //3.- Registro U1LCR (0x4001000C) - transmision de 8 bits, 1 bit de stop, sin paridad, sin break cond, DLAB = 1:
   UART0->LCR = 0x83;
     #if defined (BAUDRATE_2400)
-    UART1->DLM = 0x02;   // es el resultado de 25Mhz/(2400*16)---> 651
-    UART1->DLL = 0x8D;
+    UART0->DLM = 0x02;   // es el resultado de 25Mhz/(2400*16)---> 651
+    UART0->DLL = 0x8B;
     #elif defined (BAUDRATE_9600)
     //4.- Registros U1DLL (0x40010000) y U1DLM (0x40010004) - 9600 baudios:
     UART0->DLM = 0X00;
     UART0->DLL = 0xA3;//0xA3 para 9600
     #elif defined (BAUDRATE_19200)
     UART0->DLM = 0x00;   // es el resultado de 25Mhz/(38400*16)---> 41
-    UART0->DLL = 0x00;
+    UART0->DLL = 0x35;
     #elif defined (BAUDRATE_38400)
     UART0->DLM = 0x00;   // es el resultado de 25Mhz/(38400*16)---> 41
     UART0->DLL = 0x28;
     #elif defined (BAUDRATE_115200)
     UART0->DLM = 0x00;   // es el resultado de 25Mhz/(115200*16)---> 13.6 -- 14
-    UART0->DLL = 0x0D;
+    UART0->DLL = 0x0E;
     #endif
 
   //5.- Registros PINSEL0 (0x4002C000) y PINSEL1 (0x4002C004) - habilitan las funciones especiales de los pines:
@@ -60,6 +60,7 @@ void uart0_setup(void)
   set_pin_sel(U0RX_PIN,1);
   //6.- Registro U1LCR, pongo DLAB en 0:
   UART0->LCR &= ~(0x01<<7);// pongo en cero el bit 7 DLAB=0
+  //UART0->LCR = 0x03; //Word Length Select //   0b00011 8-bit character length
   //7. Habilito las interrupciones (En la UART -IER- y en el NVIC -ISER)
   UART0->IER |= 0X03 ; // bit 0 y 1 del registro U1Ier Habilia int por TX y RX
   ISER0 |= (1<<5);
@@ -93,19 +94,19 @@ void uart1_setup(void)
   //4.- Registros U1DLL (0x40010000) y U1DLM (0x40010004) en 0xA2:
   #if defined (BAUDRATE_2400)
   UART1->DLM = 0x02;   // es el resultado de 25Mhz/(2400*16)---> 651
-  UART1->DLL = 0x8D;
+  UART1->DLL = 0x8B;
   #elif defined (BAUDRATE_9600)
   UART1->DLM = 0x00;   // es el resultado de 25Mhz/(9600*16)---> 163
   UART1->DLL = 0xA3;
   #elif defined (BAUDRATE_19200)
   UART1->DLM = 0x00;   // es el resultado de 25Mhz/(9600*16)---> 163
-  UART1->DLL = 0xA3;
+  UART1->DLL = 0x35;
   #elif defined (BAUDRATE_38400)
   UART1->DLM = 0x00;   // es el resultado de 25Mhz/(38400*16)---> 41
   UART1->DLL = 0x28;
   #elif defined (BAUDRATE_115200)
   UART1->DLM = 0x00;   // es el resultado de 25Mhz/(115200*16)---> 13.6 -- 14
-  UART1->DLL = 0x0D;
+  UART1->DLL = 0x0E;
   #endif
 
   //5. habilitan las funciones especiales de los pines:
@@ -140,13 +141,30 @@ uint8_t uart0_rx_pop ( void)
 
 }
 
+
 void uart0_tx_push ( uint8_t data )
 {
   buffer_push(&uart0_tx_buffer, data);
   //Si esta vacio el THR
   if ( UART0->LSR.THRE)
     UART0->THR = uart0_tx_pop();
+}
 
+
+void uart0_char_tx ( char data )
+{
+  while((UART0->LSR.THRE)==0);
+      UART0->THR = data;
+}
+
+void uart0_string_tx ( char * str )
+{
+  static uint16_t count;
+  count=0;
+  while (str[count] != 0) {
+    uart0_char_tx(str[count]); // print each character
+   count++;
+  }
 }
 
 

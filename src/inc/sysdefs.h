@@ -3,6 +3,37 @@
 
 #include <stdint.h>
 
+/*
+ * SYSTEM CONFIGURATION
+ * */
+
+#define DEBUG_ON
+
+//UART
+//uncomment to use uart0 or comment to use uart1
+#define USE_UART0
+//#define USE_UART1
+
+//#define BAUDRATE_2400
+//#define BAUDRATE_9600
+//#define BAUDRATE_19200
+#define BAUDRATE_38400
+//#define BAUDRATE_115200
+
+
+//KEYBOARD
+//#define USE_SW1_WITH_INTERRUPTS
+//#define USE_SW4_WITH_INTERRUPTS
+#define USE_SW1_WITH_POLLING
+#define USE_SW2_WITH_POLLING
+#define USE_SW3_WITH_POLLING
+#define USE_SW4_WITH_POLLING
+
+
+#define USE_SW_WITH_POLLING defined(USE_SW1_WITH_POLLING) || defined(USE_SW2_WITH_POLLING) || defined(USE_SW3_WITH_POLLING) || defined(USE_SW4_WITH_POLLING)
+
+
+
 
 #define __R volatile const
 #define __W volatile
@@ -156,35 +187,6 @@ typedef union {
 
 
 
-
-/*
- * SYSTEM CONFIGURATION
- * */
-
-#define DEBUG_ON
-
-//UART
-//uncomment to use uart0 or comment to use uart1
-//#define USE_UART0
-#define USE_UART1
-
-//#define BAUDRATE_2400
-//#define BAUDRATE_9600
-//#define BAUDRATE_19200
-#define BAUDRATE_38400
-//#define BAUDRATE_115200
-
-
-//KEYBOARD
-//#define USE_SW1_WITH_INTERRUPTS
-//#define USE_SW4_WITH_INTERRUPTS
-#define USE_SW1_WITH_POLLING
-#define USE_SW2_WITH_POLLING
-#define USE_SW3_WITH_POLLING
-#define USE_SW4_WITH_POLLING
-
-
-#define USE_SW_WITH_POLLING defined(USE_SW1_WITH_POLLING) || defined(USE_SW2_WITH_POLLING) || defined(USE_SW3_WITH_POLLING) || defined(USE_SW4_WITH_POLLING)
 
 
 
