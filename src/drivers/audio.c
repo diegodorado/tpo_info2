@@ -20,13 +20,17 @@ static volatile uint32_t sample_rate;
 static volatile uint8_t playing = 0;
 
 static void audio_gen_sine_wave(void);
+static void audio_sd_read_test(void);
 
 
 void audio_setup(void)
 {
   dac_setup();
   gpio_set_dir(0,22, 1);
-  audio_gen_sine_wave();
+  //audio_gen_sine_wave();
+
+  audio_sd_read_test();
+
 }
 
 static void audio_gen_sine_wave(void)
@@ -60,6 +64,40 @@ static void audio_gen_sine_wave(void)
   }
 
 }
+
+
+
+
+static void audio_sd_read_test(void)
+{
+  uint32_t sample_index = 0;
+  int i, ssd_result, block=0 ;
+  uint8_t data_buf[512];
+
+  sd_card_setup();
+
+  //leo solo 44 bloques de la sd
+  for (block=0;block<44;block++)
+  {
+    if(sd_card_read(data_buf, 512, block) ==0)
+    {
+      for(i=0;i<512;i++)
+        SOUND_DATA_DATA[sample_index++] = data_buf[i];
+
+    }
+    else{
+      lcd_print("error sd");
+    }
+
+
+
+  }
+
+
+}
+
+
+
 
 
 
