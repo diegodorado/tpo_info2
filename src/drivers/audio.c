@@ -14,7 +14,7 @@
 
 
 
-#define SOUND_DATA_LENGTH 4096
+#define SOUND_DATA_LENGTH 24000
 static volatile uint8_t SOUND_DATA_DATA[SOUND_DATA_LENGTH];
 static volatile uint32_t sample_rate;
 static volatile uint8_t playing = 0;
@@ -26,7 +26,7 @@ void audio_setup(void)
 {
   dac_setup();
   gpio_set_dir(0,22, 1);
-  //audio_gen_sine_wave();
+  audio_gen_sine_wave();
 }
 
 static void audio_gen_sine_wave(void)
