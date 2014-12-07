@@ -302,7 +302,7 @@ static void process_chunk( message_hdr_t* request)
   lcd_print_int_at((chunks_count-chunks_left)*100/chunks_count,3,1,3);
 
   //fill the audio buffer with raw data
-  audio_fill_audio_buffer(messageData(request)+sizeof(uint32_t)*2, request->data_length-sizeof(uint32_t)*2);
+  //audio_fill_audio_buffer(messageData(request)+sizeof(uint32_t)*2, request->data_length-sizeof(uint32_t)*2);
 
 
   if(chunks_left==0)

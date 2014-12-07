@@ -72,6 +72,7 @@ static void idle( void)
 
 static void playing( void)
 {
+  audio_try_load_sample_block();
 }
 
 
