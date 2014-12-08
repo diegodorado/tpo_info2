@@ -7,6 +7,14 @@
 
 #include "storage.h"
 
+
+
+static volatile uint8_t buffer[512];
+static volatile uint16_t buffer_in=0;
+static volatile uint16_t buffer_out=0;
+static volatile uint32_t block_index=0;
+
+
 void storage_setup(void)
 {
   //todo: implementar la inicializacion

@@ -76,7 +76,7 @@ static void idle( void)
     message = client_get_message();
     if ( message ==NULL)
     {
-      lcd_print_at("ERROR NULL MSG1",1,0);
+      lcd_print_at("NULLMSG1",1,0);
     }
     else
     {
@@ -88,7 +88,7 @@ static void idle( void)
       }
       else
       {
-        lcd_print_at("MSG NOT EXPT!1",1,0);
+        lcd_print_at("MNEXPT!1",1,0);
       }
     }
 
@@ -226,7 +226,7 @@ static void processing_fileheader( void)
   lcd_print_at("SR: ",1,0);
   lcd_print_int_at(header->sample_rate,8,1,10);
 
-  if(header->chunks_count>700)
+  if(header->filesize>1024*1024*100) //no more than 100mb
   {
     client_send_status_response(last_request, STATUS_ERROR);
     free(last_request);
@@ -254,19 +254,17 @@ static void processing_filechunks( void)
     message = client_get_message();
     if ( message ==NULL)
     {
-      lcd_print_at("ERROR NULL MSG4",1,0);
+      lcd_print_at("NULL MSG4",1,0);
     }
     else
     {
       if( message->msg_type== MESSAGE_FILECHUNK)
       {
-        //lcd_print_at("pCH-",0,0);
-
         process_chunk(message);
       }
       else
       {
-        lcd_print_at("MSG NOT EXPT!4",1,0);
+        lcd_print_at("NOTEXPT!4",1,0);
       }
 
     }
@@ -282,8 +280,17 @@ static void processing_filechunks( void)
 
 static void process_chunk( message_hdr_t* request)
 {
+
+  static volatile uint8_t buffer[512];
+  static volatile uint16_t buffer_index=0;
+  static volatile uint32_t block_index=0;
+
+
+
   message_hdr_t response;
   filechunk_hdr_t chunk;
+  uint8_t* raw_data;
+  uint8_t  raw_data_length;
 
   chunk.status = 0;
   chunk.chunk_id = *(uint32_t*) messageData(request);
@@ -300,6 +307,12 @@ static void process_chunk( message_hdr_t* request)
   lcd_print_char_at('%',1,0);
   chunks_left--;
   lcd_print_int_at((chunks_count-chunks_left)*100/chunks_count,3,1,3);
+
+  buffer_index++;
+
+  raw_data = messageData(request) + sizeof(uint32_t)*2;
+  raw_data_length = request->data_length - sizeof(uint32_t)*2;
+
 
   //fill the audio buffer with raw data
   //audio_fill_audio_buffer(messageData(request)+sizeof(uint32_t)*2, request->data_length-sizeof(uint32_t)*2);

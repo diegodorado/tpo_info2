@@ -10,13 +10,13 @@ void setup(void){
   //todo: implementar la inicializacion del equipo (cada llamada a funcion)
   device_setup(); // inicializar micro (PLL)
   systick_setup();
-  //timer0_setup(); // used for LCD, configured at 1us
+  timer0_setup(); // used for LCD, configured at 1us
   timer1_setup(); // used for audio, interrupts at the defined sample rate of the current playback
   // LCD es inmediato para mostrar posibles errores
-  //lcd_setup(); // inicializar LCD
+  lcd_setup(); // inicializar LCD
   keyboard_setup(); //inicializar Teclado
   storage_setup(); //inicializar almacenamiento (tarjeta SD)
-  //client_setup(); // inicializar cliente remoto (UART)
+  client_setup(); // inicializar cliente remoto (UART)
 
   audio_setup(); // inicializar AUDIO (DAC/DMA)
 

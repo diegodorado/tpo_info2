@@ -8,8 +8,8 @@ int main(void)
   setup();
 
  	while(1){
- 	  //lcd_refresh(); // otro formato... pero es una FSM (con corutinas)
- 	  //fsm_client_update();  // ejecuta un tick de la maquina de estados "cliente"
+ 	  lcd_refresh(); // otro formato... pero es una FSM (con corutinas)
+ 	  fsm_client_update();  // ejecuta un tick de la maquina de estados "cliente"
  	  fsm_playback_update();  // ejecuta un tick de la maquina de estados "playback"
  	}
 
