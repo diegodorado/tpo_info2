@@ -67,11 +67,12 @@ fsm_playback_state_t fsm_playback_state()
 
 static void idle( void)
 {
-  lcd_print_at("...",1,8);
+  //lcd_print_at("...",1,8);
 }
 
 static void playing( void)
 {
+  audio_try_load_sample_block();
 }
 
 

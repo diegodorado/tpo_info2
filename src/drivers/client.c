@@ -107,17 +107,16 @@ void client_send_message_response(message_hdr_t* message, uint8_t* data)
 void client_send_message(message_hdr_t* message, uint8_t* data)
 {
 
-  int i;
+  uint8_t i;
   uint8_t checksum = messageGetChecksum(message, data);
 
   client_tx_push(START_OF_FRAME);
-  client_tx_push(message->data_length);
-  client_tx_push(message->msg_id);
-  client_tx_push(message->msg_full_type);
 
-  for(i = 0; i < message->data_length ; i++){
+  for(i = 0; i < sizeof(message_hdr_t); i++)
+    client_tx_push( *( ((uint8_t*) message) +i) );
+
+  for(i = 0; i < message->data_length ; i++)
     client_tx_push(*(data + i));
-  }
 
   client_tx_push(checksum);
   client_tx_push(END_OF_FRAME);

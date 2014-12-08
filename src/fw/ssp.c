@@ -73,7 +73,8 @@ uint16_t ssp_get_data(void)
   //SSP1ICR = 0x03;
   SSP1->DR = 0xFF;
 
-  for(aux=0;aux<500;aux++);
+  //for(aux=0;aux<500;aux++);
+  for(aux=0;aux<100;aux++);
 
   while(!(SSP1->SR&4));
     return SSP1->DR;

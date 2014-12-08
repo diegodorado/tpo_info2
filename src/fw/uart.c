@@ -85,11 +85,19 @@ void uart1_setup(void)
   //UART1->DLM = 0x00;   // es el resultado de 25Mhz/(9600*16)---> 163
   //UART1->DLL = 0xA3;
 
-  //UART1->DLM = 0x00;   // es el resultado de 25Mhz/(115200*16)---> 13.6 -- 14
-  //UART1->DLL = 0x0D;
+  //UART1->DLM = 0x00;   // es el resultado de 25Mhz/(38400*16)---> 40.7
+  //UART1->DLL = 0x28;
 
-  UART1->DLM = 0x00;   // es el resultado de 25Mhz/(38400*16)---> 41
-  UART1->DLL = 0x28;
+  UART1->DLM = 0x00;   // es el resultado de 25Mhz/(57600*16)---> 27.1
+  UART1->DLL = 0x10;
+  UART1->DIVADDVAL = 9;
+  UART1->MULVAL = 13;
+
+  //UART1->DLM = 0x00;   // es el resultado de 25Mhz/(115200*16*(1+9/13))---> 8
+  //UART1->DLL = 0x08;
+  //UART1->DIVADDVAL = 9;
+  //UART1->MULVAL = 13;
+
 
   //5. habilitan las funciones especiales de los pines:
   set_pin_sel(U1TX_PIN,1);

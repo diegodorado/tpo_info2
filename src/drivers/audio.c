@@ -7,56 +7,65 @@
 
 
 #include "audio.h"
-#include <math.h>
-
-#define PI 3.14159265
-#define MAX_SAMPLE_VALUE 128
+#include "drivers.h"
 
 
+static volatile uint8_t playback_buffer[PLAYBACK_BUFFER_LENGTH];
+static volatile uint16_t playback_buffer_in=0;
+static volatile uint16_t playback_buffer_out=0;
+volatile static uint32_t sd_block_index=2;
 
-#define SOUND_DATA_LENGTH 24000
-static volatile uint8_t SOUND_DATA_DATA[SOUND_DATA_LENGTH];
 static volatile uint32_t sample_rate;
 static volatile uint8_t playing = 0;
 
-static void audio_gen_sine_wave(void);
+static uint16_t buffer_data_size();
+static uint16_t buffer_free_space();
 
 
 void audio_setup(void)
 {
   dac_setup();
+
   gpio_set_dir(0,22, 1);
-  audio_gen_sine_wave();
+  gpio_set_pin(0,22, 0);
+
+
+
 }
 
-static void audio_gen_sine_wave(void)
+
+static uint16_t buffer_data_size()
 {
-  uint32_t freq,sample_index = 0;
-  int i;
-  uint8_t sample;
-  double t,sine, period_sample_rate;
-
-  sample_rate = 8000;
-  freq = 600;
+  if (playback_buffer_in >= playback_buffer_out )
+    return playback_buffer_in - playback_buffer_out;
+  else
+    return PLAYBACK_BUFFER_LENGTH - ( playback_buffer_out - playback_buffer_in);
+}
 
 
-  while (sample_index < SOUND_DATA_LENGTH)
+static uint16_t buffer_free_space()
+{
+  return PLAYBACK_BUFFER_LENGTH - buffer_data_size();
+}
+
+
+
+
+void audio_try_load_sample_block(void)
+{
+
+  if (buffer_free_space()>=(512*8))
   {
 
-
-    if(sample_index%200 == 0)
+    if(sd_card_read(playback_buffer+playback_buffer_in, 8, sd_block_index))
     {
-      freq -= 5;
+      gpio_set_pin(0,22,!gpio_get_pin(0,22,1));
+      sd_block_index += 8;
+      playback_buffer_in += (512*8);
+      playback_buffer_in %= PLAYBACK_BUFFER_LENGTH;
+
     }
-    period_sample_rate = sample_rate * 1.0 / freq;
 
-    t =  i * 1.0 / period_sample_rate;
-    i++;
-    i %=(int)period_sample_rate;
-
-    sine = sin(t*2.0*PI);
-    sample = ((sine + 1.0) * 0.5 * MAX_SAMPLE_VALUE);
-    SOUND_DATA_DATA[sample_index++] = sample;
   }
 
 }
@@ -69,53 +78,54 @@ void audio_set_sample_rate(uint32_t srate)
 }
 
 
-//return 1 if buffer is full
-uint8_t audio_fill_audio_buffer(uint8_t* sample_start, uint8_t length)
-{
-  static volatile int sample_index = 0;
-
-  while(length-- >0)
-  {
-    if (sample_index >= SOUND_DATA_LENGTH)
-      return 1;
-
-    SOUND_DATA_DATA[sample_index++] = *sample_start++;
-  }
-
-  return 0;
-
-}
-
 void audio_play()
 {
-  playing = 1;
+  if (sd_card_setup() )
+  {
+    lcd_print_at("sd ok",0,0);
+    playing = 1;
+  }
+  else
+  {
+    lcd_print_at("sd failed",0,0);
+  }
+
+
+
 }
 
 void audio_stop()
 {
   playing = 0;
+  sd_block_index = 1;
+  playback_buffer_in = playback_buffer_out = 0;
 }
 
 
-// called every 1us
-// sends the last sample to the dac
-// increment the sample index if sample_rate is reached
+// send a single audio sample to DAC
 void audio_play_sample()
 {
-  static volatile uint32_t sample_index = 0;
   uint8_t sample;
 
   if(!playing)
     return;
 
+  if (buffer_data_size()>0)
+  {
+    sample = playback_buffer[playback_buffer_out];
+    playback_buffer_out++;
+    playback_buffer_out %= PLAYBACK_BUFFER_LENGTH;
 
-  sample = SOUND_DATA_DATA[sample_index];
 
-  if (++sample_index >= SOUND_DATA_LENGTH){
-    sample_index = 0;
-    gpio_set_pin(0,22,!gpio_get_pin(0,22,1)); // blink when buffer restart
+    dac_set_value(sample*4); // shift volume, since DAC is 10bit, and data is 8bit
+
+    //if (++sample_index >= PLAYBACK_BUFFER_LENGTH){
+    //  gpio_set_pin(0,22,!gpio_get_pin(0,22,1)); // blink when buffer restart
+    //}
+
   }
-  dac_set_value(sample*4); // shift volume, since DAC is 10bit, and data is 8bit
+
+
 
 
 }

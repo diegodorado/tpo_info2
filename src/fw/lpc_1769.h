@@ -247,6 +247,17 @@ typedef struct
   __R uint32_t RESERVED1;           // For alignement purposes
   __R uart_lsr_t LSR;                 // Line STATUS Register de la UART1
 
+  __R uint32_t RESERVED2[4]; // for alignement
+  // UARTn Fractional Divider Register (U0FDR - address 0x4000 C028...)
+  struct
+  {
+    __RW uint32_t DIVADDVAL :4;
+    __RW uint32_t MULVAL :4;
+    __RW uint32_t RESERVED3 :24;  // for alignement
+
+  };
+
+
 } uart_t;
 
 #define UART_INT_ID_RLS  0b011 //Receive Line Status
