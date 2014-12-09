@@ -25,6 +25,7 @@ static uint16_t buffer_free_space();
 void audio_setup(void)
 {
   dac_setup();
+  timer1_setup(); // used for audio, interrupts at the defined sample rate of the current playback
 
   gpio_set_dir(0,22, 1);
   gpio_set_pin(0,22, 0);

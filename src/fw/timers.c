@@ -68,9 +68,9 @@ void timer1_setup(void)
   TIMER1->TCR_ENABLED = 0;    // Apago el temporizador
   TIMER1->TCR_RESET = 1;      // Reseteo el temporizador
 
-  TIMER1->PR = 25;      // 25MHz / 25 = 1MHz
+  TIMER1->PR = 0;//25;      // 25MHz / 25 = 1MHz
   TIMER1->PC = 0;
-  TIMER1->MR0 = 125;      // match0
+  TIMER1->MR0 = 1134-1;//3124;      // match0
   TIMER1->TC = 0;
 
   TIMER1->MCR = 0x00;     // Aseguro la condición de arranque

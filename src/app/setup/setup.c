@@ -11,7 +11,6 @@ void setup(void){
   device_setup(); // inicializar micro (PLL)
   systick_setup();
   timer0_setup(); // used for LCD, configured at 1us
-  timer1_setup(); // used for audio, interrupts at the defined sample rate of the current playback
   // LCD es inmediato para mostrar posibles errores
   lcd_setup(); // inicializar LCD
   keyboard_setup(); //inicializar Teclado
