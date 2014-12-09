@@ -82,8 +82,11 @@ static void idle( void)
     {
       if( message->msg_type== MESSAGE_HANDSHAKE)
       {
-        lcd_print_at("HANDSHAKE!",1,0);
-        client_send_status_response(message, STATUS_OK);
+        lcd_print_at("HSH",1,0);
+
+        message->is_response = 1;
+        client_send_message_response(message, NULL);
+
         fsm_client_change(FSM_CLIENT_STATE_CONNECTED);
       }
       else
@@ -111,7 +114,7 @@ static void connected( void)
     message = client_get_message();
     if ( message ==NULL)
     {
-      lcd_print_at("ERROR NULL MSG2",1,0);
+      lcd_print_at("NULL2",1,0);
     }
     else
     {
@@ -119,7 +122,9 @@ static void connected( void)
         case MESSAGE_HANDSHAKE:
           // client is checking the connection is still alive
           // just respond, dont change the state
-          client_send_status_response(message, STATUS_OK);
+          message->is_response = 1;
+          client_send_message_response(message, NULL);
+          break;
 
         case MESSAGE_INFO_STATUS:
           last_request = message;
@@ -135,7 +140,7 @@ static void connected( void)
           break;
         default:
           free(message);
-          lcd_print_at("MSG NOT EXPT!2",1,0);
+          lcd_print_at("NEXPT2",1,0);
           break;
       }
 
@@ -159,7 +164,7 @@ static void processing_status( void)
 
   message_hdr_t response;
   status_hdr_t status;
-  fileheader_data_t files[4];
+  fileheader_data_t files[3];
   int i,j;
   uint8_t data[sizeof(status_hdr_t)+sizeof(files)];
   uint8_t* data_ptr;
@@ -169,7 +174,7 @@ static void processing_status( void)
   status.sd_connected = 1;
   status.total_space = 150;
   status.available_space = 75;
-  status.files_count = 4;
+  status.files_count = 3;
 
 
   for(i = 0; i < sizeof(status_hdr_t) ; i++)
@@ -219,12 +224,13 @@ static void processing_fileheader( void)
   int i;
   fileheader_data_t* header;
   header = (fileheader_data_t*) messageData(last_request);
-  lcd_print_at("F.Req: ",0,0);
+  lcd_clear();
+  lcd_print_at("F:",0,0);
   for(i=0;i<sizeof(header->filename);i++)
     lcd_print_char(header->filename[i]);
 
-  lcd_print_at("SR: ",1,0);
-  lcd_print_int_at(header->sample_rate,8,1,10);
+  lcd_print_at("SR:",1,0);
+  lcd_print_int_at(header->sample_rate,5,1,15);
 
   if(header->filesize>1024*1024*100) //no more than 100mb
   {
@@ -234,10 +240,22 @@ static void processing_fileheader( void)
   }
   else
   {
-    client_send_status_response(last_request, STATUS_OK);
-    chunks_count = chunks_left = header->chunks_count;
+    if ( sd_card_setup() )
+    {
+      client_send_status_response(last_request, STATUS_OK);
+      chunks_count = chunks_left = header->chunks_count;
+      fsm_client_change(FSM_CLIENT_STATE_PROCESSING_FILECHUNKS);
+
+    }
+    else
+    {
+      client_send_status_response(last_request, STATUS_ERROR);
+      fsm_client_change(FSM_CLIENT_STATE_CONNECTED);
+      lcd_print_at("SD NOT READY",1,0);
+
+    }
+
     free(last_request);
-    fsm_client_change(FSM_CLIENT_STATE_PROCESSING_FILECHUNKS);
   }
 
 }
@@ -247,14 +265,12 @@ static void processing_filechunks( void)
 
   message_hdr_t* message;
 
-
-
   if( client_has_message() )
   {
     message = client_get_message();
     if ( message ==NULL)
     {
-      lcd_print_at("NULL MSG4",1,0);
+      lcd_print_at("NULL4",1,0);
     }
     else
     {
@@ -264,7 +280,7 @@ static void processing_filechunks( void)
       }
       else
       {
-        lcd_print_at("NOTEXPT!4",1,0);
+        lcd_print_at("NEXPT4",1,0);
       }
 
     }
@@ -281,18 +297,12 @@ static void processing_filechunks( void)
 static void process_chunk( message_hdr_t* request)
 {
 
-  static volatile uint8_t buffer[512];
-  static volatile uint16_t buffer_index=0;
-  static volatile uint32_t block_index=0;
-
-
+  static volatile uint32_t start_block_index=0;
 
   message_hdr_t response;
   filechunk_hdr_t chunk;
-  uint8_t* raw_data;
-  uint8_t  raw_data_length;
+  uint8_t* buf;
 
-  chunk.status = 0;
   chunk.chunk_id = *(uint32_t*) messageData(request);
 
   response.msg_id = request->msg_id;
@@ -300,29 +310,39 @@ static void process_chunk( message_hdr_t* request)
   response.is_response = 1;
   response.data_length = sizeof(chunk);
 
-  client_send_message_response(&response, (uint8_t*)  &chunk);
 
-  lcd_print_int_at(chunk.chunk_id,5,0,15);
-
-  lcd_print_char_at('%',1,0);
-  chunks_left--;
-  lcd_print_int_at((chunks_count-chunks_left)*100/chunks_count,3,1,3);
-
-  buffer_index++;
-
-  raw_data = messageData(request) + sizeof(uint32_t)*2;
-  raw_data_length = request->data_length - sizeof(uint32_t)*2;
-
-
-  //fill the audio buffer with raw data
-  //audio_fill_audio_buffer(messageData(request)+sizeof(uint32_t)*2, request->data_length-sizeof(uint32_t)*2);
-
-
-  if(chunks_left==0)
+  buf = messageData(request) + sizeof(chunk.chunk_id);
+  if ( sd_card_write(buf, 1, start_block_index + chunk.chunk_id) )
   {
-    lcd_print_at("TRANSFER COMPLETE!",0,0);
-    fsm_client_change(FSM_CLIENT_STATE_CONNECTED);
+    chunk.status = 0;
+    chunks_left--;
+    if(chunks_left>0)
+    {
+      lcd_print_int_at(chunks_left,5,1,15);
+      lcd_print_int_at(chunk.chunk_id,5,0,15);
+      lcd_print_char_at('%',1,0);
+      lcd_print_int_at((chunks_count-chunks_left)*100/chunks_count,3,1,3);
+    }
+    else
+    {
+      lcd_clear();
+      lcd_print_at("TRANSFER DONE",0,0);
+      fsm_client_change(FSM_CLIENT_STATE_CONNECTED);
+    }
+    client_send_message_response(&response, (uint8_t*)  &chunk);
+
   }
+  else
+  {
+    chunk.status = 1;
+    fsm_client_change(FSM_CLIENT_STATE_IDLE);
+    client_send_message_response(&response, (uint8_t*)  &chunk);
+    lcd_clear();
+    lcd_print_at("TRANSFER ERROR",0,0);
+  }
+
+
+
 
 
 

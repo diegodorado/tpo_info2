@@ -14,7 +14,7 @@ End of Multi Language Header
 */
 
 
-/*START OF C/C++ COMMON CODE - (do not code aboce this line)*/
+/*START OF C/C++ COMMON CODE - (do not code above this line)*/
 #include "protocol.h"
 
 
@@ -40,9 +40,9 @@ static void raw_rx_buffer_clear ();
 uint8_t messageGetChecksum(message_hdr_t* message, uint8_t* data)
 {
   uint8_t result = 0;
-  int i;
+  uint16_t i;
 
-  for(i = 0; i < sizeof(message); i++)
+  for(i = 0; i < sizeof(message_hdr_t); i++)
     result ^= *( ((uint8_t*) message) +i);
 
   for(i = 0; i < message->data_length; i++)
@@ -77,12 +77,17 @@ void messagesBufferPush ( uint8_t data )
 uint8_t* messagesBufferPop ( void)
 {
   uint8_t* raw_data = NULL;
-  int i;
-  int l = buffered_message_length();
+  uint16_t i;
+  uint16_t l = buffered_message_length();
 
   if (buffer_status==BUFFER_MSG_OK){
     raw_data = (uint8_t*) malloc (l*sizeof(uint8_t));
-    if (raw_data !=NULL){
+    if (raw_data ==NULL)
+    {
+      buffer_status = BUFFER_NOT_SOF;
+    }
+    else
+    {
       for(i=0;i<l;i++){
         *(raw_data+i) = raw_rx_buffer[raw_rx_buffer_out_index++];
         raw_rx_buffer_out_index %= RAW_RX_BUFFER_SIZE;
@@ -129,10 +134,12 @@ static uint8_t raw_rx_buffer_at(int i)
 
 /*
  * returns the message length
- *
+ * caution! only valid if buffer status
+ * is BUFFER_IN_MSG or BUFFER_EOF
 */
 static uint16_t buffered_message_data_length()
 {
+
   uint8_t i;
   uint16_t length;
 
@@ -205,8 +212,6 @@ static uint8_t validate_buffer_checksum()
 */
 buffer_status_t messagesBufferProcess ( void)
 {
-  if(raw_rx_buffer_count()==0)
-    return buffer_status;
 
   //check if an error ocurred last time
   if(buffer_status==BUFFER_ERROR_SOF_EXPECTED
@@ -230,6 +235,7 @@ buffer_status_t messagesBufferProcess ( void)
     if (raw_rx_buffer_at(0) == START_OF_FRAME)
     {
       unframed_data_count = 0;
+      raw_rx_buffer[raw_rx_buffer_out_index] = 0; //read it only once
       raw_rx_buffer_out_index++; //discard SOF byte
       buffer_status = BUFFER_SOF;
     }

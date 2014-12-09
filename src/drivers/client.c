@@ -46,11 +46,13 @@ static void update_lcd_timer(void){
 uint8_t client_has_message()
 {
   uint8_t data;
+  uint8_t has_data = 0;
   // fill message buffer if there is data on serial buffer
   while( client_data_size()>0 )
   {
     data = client_rx_pop();
     messagesBufferPush( data );
+    has_data = 1;
   }
 
   // return 1 if meesage buffer has a complete message checked
@@ -107,7 +109,7 @@ void client_send_message_response(message_hdr_t* message, uint8_t* data)
 void client_send_message(message_hdr_t* message, uint8_t* data)
 {
 
-  uint8_t i;
+  uint16_t i;
   uint8_t checksum = messageGetChecksum(message, data);
 
   client_tx_push(START_OF_FRAME);
