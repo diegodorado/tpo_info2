@@ -15,16 +15,17 @@ static fsm_client_state_t state = FSM_CLIENT_STATE_IDLE; // estado inicial
 static void idle( void);
 static void connected( void);
 static void processing_status( void);
-static void processing_playback_command( void);
+static void processing_command( void);
 static void processing_fileheader( void);
 static void processing_filechunks( void);
 
 //utils
 static void process_chunk( message_hdr_t* message);
 
-static message_hdr_t* last_request = NULL;
-static uint32_t chunks_count=0;
-static uint32_t chunks_left=0;
+static volatile message_hdr_t* last_request = NULL;
+static volatile uint32_t chunks_count=0;
+static volatile uint32_t chunks_left=0;
+static volatile uint32_t start_block_index=0;
 
 
 // definicion de la tabla de punteros a funcion
@@ -33,7 +34,7 @@ static void (* const state_table[])(void) = {
   idle,
   connected,
   processing_status,
-  processing_playback_command,
+  processing_command,
   processing_fileheader,
   processing_filechunks,
 };
@@ -130,9 +131,9 @@ static void connected( void)
           last_request = message;
           fsm_client_change(FSM_CLIENT_STATE_PROCESSING_STATUS);
           break;
-        case MESSAGE_PLAYBACK_COMMAND:
+        case MESSAGE_COMMAND:
           last_request = message;
-          fsm_client_change(FSM_CLIENT_STATE_PROCESSING_PLAYBACK_COMMAND);
+          fsm_client_change(FSM_CLIENT_STATE_PROCESSING_COMMAND);
           break;
         case MESSAGE_FILEHEADER:
           last_request = message;
@@ -154,67 +155,64 @@ static void connected( void)
 static void processing_status( void)
 {
   //todo:
-  //     *  recuperar estado SD
   //     *  recuperar espacio disponible
   //     *  recuperar espacio total
-  //     *  recuperar lista de audio
-  //     *  componer mensaje de respuesta
-  //
 
 
   message_hdr_t response;
   status_hdr_t status;
-  fileheader_data_t files[3];
+  fileheader_data_t file_headers[STORAGE_FILE_HEADERS_MAX_COUNT];
   int i,j;
-  uint8_t data[sizeof(status_hdr_t)+sizeof(files)];
+  uint8_t data[sizeof(status_hdr_t)+sizeof(file_headers)];
   uint8_t* data_ptr;
 
   data_ptr = (uint8_t*) &data;
 
-  status.sd_connected = 1;
-  status.total_space = 150;
-  status.available_space = 75;
-  status.files_count = 3;
-
+  storage_disk_status(&status);
+  if( status.sd_status!=0)
+    status.files_count = 0;
 
   for(i = 0; i < sizeof(status_hdr_t) ; i++)
-    *(data_ptr++) = *( ( (uint8_t*) &status ) + i);
+    *data_ptr++ = *( ( (uint8_t*) &status ) + i);
 
-
-  for(i = 0; i<status.files_count;i++)
+  if( storage_get_file_headers(file_headers, status.files_count)!=0)
   {
-    files[i].filesize = 1000;
-    files[i].chunks_count = 100;
-    files[i].filename[0] = 'A';
-    files[i].filename[1] = 'u';
-    files[i].filename[2] = 'd';
-    files[i].filename[3] = 'i';
-    files[i].filename[4] = 'o';
-    files[i].filename[5] = '_';
-    files[i].filename[6] = '0';
-    files[i].filename[7] = '0' + i;
-
-    for(j = 0; j < sizeof(fileheader_data_t) ; j++)
-      *(data_ptr++) = *( ( (uint8_t*) &files[i] ) + j);
-
+    status.files_count = 0;
+    status.sd_status = 4; //couldnt get files info
   }
+
+  for(i = 0; i < sizeof(fileheader_data_t) * status.files_count ; i++)
+    *data_ptr++ = *( ( (uint8_t*) file_headers ) + i);
 
 
   response.msg_id = last_request->msg_id;
   response.msg_type = last_request->msg_type;
   response.is_response = 1;
-  response.data_length = sizeof(data);
+  response.data_length = sizeof(status_hdr_t) + sizeof(fileheader_data_t) * status.files_count ;
 
   client_send_message_response(&response, (uint8_t*) &data);
   free(last_request);
   fsm_client_change(FSM_CLIENT_STATE_CONNECTED);
 }
 
-static void processing_playback_command( void)
+static void processing_command( void)
 {
   lcd_print_at("CMD RX:",1,0);
   lcd_print_char( '0' + *messageData(last_request) );
-  client_send_status_response(last_request, STATUS_OK);
+
+  switch (*messageData(last_request)) {
+    case COMMAND_FORMAT_SD:
+      if(storage_format_disk()==0)
+        client_send_status_response(last_request, STATUS_OK);
+      else
+        client_send_status_response(last_request, STATUS_ERROR);
+
+      break;
+    default:
+      client_send_status_response(last_request, STATUS_OK);
+      break;
+  }
+
   free(last_request);
   fsm_client_change(FSM_CLIENT_STATE_CONNECTED);
 }
@@ -222,17 +220,17 @@ static void processing_playback_command( void)
 static void processing_fileheader( void)
 {
   int i;
-  fileheader_data_t* header;
-  header = (fileheader_data_t*) messageData(last_request);
+  fileheader_data_t* file_header;
+  file_header = (fileheader_data_t*) messageData(last_request);
   lcd_clear();
   lcd_print_at("F:",0,0);
-  for(i=0;i<sizeof(header->filename);i++)
-    lcd_print_char(header->filename[i]);
+  for(i=0;i<sizeof(file_header->filename);i++)
+    lcd_print_char(file_header->filename[i]);
 
   lcd_print_at("SR:",1,0);
-  lcd_print_int_at(header->sample_rate,5,1,15);
+  lcd_print_int_at(file_header->sample_rate,5,1,15);
 
-  if(header->filesize>1024*1024*100) //no more than 100mb
+  if(file_header->length>1024*1024*100) //no more than 100mb
   {
     client_send_status_response(last_request, STATUS_ERROR);
     free(last_request);
@@ -240,10 +238,13 @@ static void processing_fileheader( void)
   }
   else
   {
-    if ( sd_card_setup() )
+
+    if ( storage_save_file_header(file_header)==0 )
     {
+
       client_send_status_response(last_request, STATUS_OK);
-      chunks_count = chunks_left = header->chunks_count;
+      chunks_count = chunks_left = file_header->chunks_count;
+      start_block_index = file_header->block_start;
       fsm_client_change(FSM_CLIENT_STATE_PROCESSING_FILECHUNKS);
 
     }
@@ -297,7 +298,6 @@ static void processing_filechunks( void)
 static void process_chunk( message_hdr_t* request)
 {
 
-  static volatile uint32_t start_block_index=0;
 
   message_hdr_t response;
   filechunk_hdr_t chunk;

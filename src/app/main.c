@@ -2,10 +2,6 @@
 #include "fsm.h"
 
 
-static uint32_t chunks_count=2000;
-static uint32_t chunks_left=1000;
-
-
 int main(void)
 {
 
