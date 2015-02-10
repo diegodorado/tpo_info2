@@ -70,7 +70,7 @@ void timer1_setup(void)
 
   TIMER1->PR = 0;//25;      // 25MHz / 25 = 1MHz
   TIMER1->PC = 0;
-  TIMER1->MR0 = 1134-1;//3124;      // match0
+  TIMER1->MR0 = 3125-1; //1134-1;//3124;      // match0
   TIMER1->TC = 0;
 
   TIMER1->MCR = 0x00;     // Aseguro la condición de arranque
