@@ -18,27 +18,32 @@ static volatile uint32_t block_index=0;
 void storage_setup(void)
 {
 
-  lcd_print("bienvenido");
+uint32_t size;
+  uint8_t i = 0;
 
-  uint8_t buf[FILECHUNK_SIZE];
-  uint8_t i;
-
-  for(i=0;i<20;i++)
-    buf[i] = i + 48;
 
   //storage_format_disk();
   //todo: implementar la inicializacion
 
   if ( !sd_card_setup() ){
-    //gpio_set_pin(2,3,1); //rojo
+    gpio_set_pin(2,3,1); //rojo
     return;
   }
 
-  if ( !sd_card_write(buf, 1, STORAGE_DISK_HEADER_BLOCK ) )
+  size = sd_card_size();
+
+  lcd_print_at((char*)sd_card_csd(),0,0);
+
+  i = sd_card_type();
+  lcd_print_char_at('0'+i,1,8);
+
+  if ( !(i=storage_format_disk()) )
     gpio_set_pin(2,1,1); //azul
   else
     gpio_set_pin(2,2,1); //verde
 
+
+  lcd_print_char_at('0'+i,1,0);
 
 }
 
