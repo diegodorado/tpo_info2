@@ -6,10 +6,10 @@
  */
 
 #include "storage.h"
+#include "drivers.h"
 
 
-
-static volatile uint8_t buffer[512];
+static volatile uint8_t buffer[FILECHUNK_SIZE];
 static volatile uint16_t buffer_in=0;
 static volatile uint16_t buffer_out=0;
 static volatile uint32_t block_index=0;
@@ -17,13 +17,35 @@ static volatile uint32_t block_index=0;
 
 void storage_setup(void)
 {
+
+  lcd_print("bienvenido");
+
+  uint8_t buf[FILECHUNK_SIZE];
+  uint8_t i;
+
+  for(i=0;i<20;i++)
+    buf[i] = i + 48;
+
+  //storage_format_disk();
   //todo: implementar la inicializacion
+
+  if ( !sd_card_setup() ){
+    //gpio_set_pin(2,3,1); //rojo
+    return;
+  }
+
+  if ( !sd_card_write(buf, 1, STORAGE_DISK_HEADER_BLOCK ) )
+    gpio_set_pin(2,1,1); //azul
+  else
+    gpio_set_pin(2,2,1); //verde
+
+
 }
 
 
 void storage_disk_status(status_hdr_t* status)
 {
-  uint8_t buf[512];
+  uint8_t buf[FILECHUNK_SIZE];
   uint8_t* buf_ptr = buf;
   int i;
 
@@ -54,7 +76,7 @@ void storage_disk_status(status_hdr_t* status)
   status->sd_status = 0; //overwrite what was read from sd
 
   if ( *( (uint32_t*) buf_ptr) != STORAGE_DISK_HEADER_TAIL)
-    status->sd_status = 3;
+    status->sd_status = 4;
 
 
 
@@ -63,7 +85,7 @@ void storage_disk_status(status_hdr_t* status)
 
 int storage_format_disk(void)
 {
-  uint32_t last_block = STORAGE_FILE_HEADERS_START_BLOCK + STORAGE_FILE_HEADERS_BLOCKS_COUNT - 1;
+  uint32_t last_block = STORAGE_FILE_HEADERS_START_BLOCK + STORAGE_FILE_HEADERS_BLOCKS_COUNT;
   return storage_write_header(0 , last_block );
 }
 
@@ -71,7 +93,7 @@ int storage_format_disk(void)
 
 int storage_write_header(uint32_t files_count,uint32_t last_block)
 {
-  uint8_t buf[512];
+  uint8_t buf[FILECHUNK_SIZE];
   uint8_t* buf_ptr = buf;
   status_hdr_t status;
   int i;
