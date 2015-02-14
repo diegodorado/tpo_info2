@@ -24,6 +24,6 @@ typedef enum {
 void fsm_playback_update(void);
 void fsm_playback_change(fsm_playback_state_t st);
 fsm_playback_state_t fsm_playback_state();
-
+void fsm_playback_keyboard_handler(uint8_t key);
 
 #endif /* FSM_PLAYBACK_H_ */

@@ -12,6 +12,10 @@
 
 static void keyboard_refresh(void);
 
+void (* keyboard_handler)(uint8_t key);
+void dummy_handler(uint8_t key);
+
+
 
 void keyboard_setup(void){
 
@@ -56,7 +60,7 @@ void keyboard_setup(void){
 #ifdef USE_SW_WITH_POLLING
   systick_delay_async(20, 1,keyboard_refresh);
 #endif
-
+  keyboard_set_handler(dummy_handler);
 }
 
 
@@ -68,7 +72,7 @@ static void keyboard_refresh(void){
 #ifdef USE_SW1_WITH_POLLING
   if(gpio_get_pin(KEY_PIN(0),0)){
    if (check[0]){
-      keyboard_handle_key(0);
+      (*keyboard_handler)(0);
       check[0] = 0;
     }
   }
@@ -80,7 +84,7 @@ static void keyboard_refresh(void){
 #ifdef USE_SW2_WITH_POLLING
   if(gpio_get_pin(KEY_PIN(1),0)){
    if (check[1]){
-      keyboard_handle_key(1);
+      (*keyboard_handler)(1);
       check[1] = 0;
     }
   }
@@ -92,7 +96,7 @@ static void keyboard_refresh(void){
 #ifdef USE_SW3_WITH_POLLING
   if(gpio_get_pin(KEY_PIN(2),0)){
    if (check[2]){
-      keyboard_handle_key(2);
+      (*keyboard_handler)(2);
       check[2] = 0;
     }
   }
@@ -105,7 +109,7 @@ static void keyboard_refresh(void){
 
   if(gpio_get_pin(KEY_PIN(3),0)){
    if (check[3]){
-      keyboard_handle_key(3);
+      (*keyboard_handler)(3);
       check[3] = 0;
     }
   }
@@ -120,26 +124,10 @@ static void keyboard_refresh(void){
 #endif  /* USE_SW_WITH_POLLING */
 
 
-void keyboard_handle_key(uint8_t key){
+void keyboard_set_handler(void (*handler)( uint8_t key)){
+  keyboard_handler = handler;
+}
 
-  if(key == 3){
-    fsm_playback_change(FSM_PLAYBACK_STATE_PREVIOUS);
-  }
-  else if(key == 2){
-	  if(fsm_playback_state()==FSM_PLAYBACK_STATE_PLAYING)
-	  {
-		  fsm_playback_change(FSM_PLAYBACK_STATE_PAUSE);
-	  }
-	  else
-	  {
-		  fsm_playback_change(FSM_PLAYBACK_STATE_PLAY);
-	  }
-  }
-  else if(key == 1){
-
-	  fsm_playback_change(FSM_PLAYBACK_STATE_STOP);
-  }
-  else if(key == 0){
-		fsm_playback_change(FSM_PLAYBACK_STATE_NEXT);
-  }
+void dummy_handler(uint8_t key){
+  //do nothing
 }

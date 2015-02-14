@@ -8,8 +8,8 @@ volatile uint32_t sdtimer1, sdtimer2;
 static uint8_t CardType; /* flags indicadores de tipo de memoria */
 extern volatile uint32_t sdtimer1, sdtimer2; //fixme: nadie actualiza estos valores
 
-static uint8_t csd[17];
-static uint8_t csd_read = 0;
+
+static uint32_t c_size;
 
 
 
@@ -148,9 +148,10 @@ static uint8_t sd_card_send_block(uint8_t *buf, uint32_t size, uint8_t token)
 
 uint32_t sd_card_setup(void)
 {
-  uint8_t n, cmd, type, ocr[4];
+  uint8_t n, cmd, type, ocr[4],csd[17];
+  uint32_t size_mult, block_len;
 
-
+  c_size = 0;
   for (n = 0; n < 17; n++)
     csd[n] = 0;
 
@@ -198,9 +199,35 @@ uint32_t sd_card_setup(void)
     }
 
 
-    // get sd size
-    if ( (sd_card_send_cmd(CMD9, 0) == 0) && sd_card_get_block((uint8_t*)csd, 16) ) /* READ_CSD */
-      csd_read = 1;
+
+    /* READ_CSD */
+    if ( (sd_card_send_cmd(CMD9, 0) == 0) && sd_card_get_block((uint8_t*)csd, 16) ){
+      // get sd size
+      if(csd[0] & 0xC0) {                      //Check CSD_STRUCTURE field for v2+ struct device
+        // Must be a v2 device (or a reserved higher version, that doesn't currently exist)
+        // Extract the C_SIZE field from the response.  It is a 22-bit number in bit position 69:48.
+        // This is different from v1.
+        // It spans bytes 7, 8, and 9 of the response.
+        c_size = ((uint32_t)(csd[7] & 0x3F))<<16; //CSD[07] -> [71:64]
+        c_size |= ((uint32_t)csd[8])<<8;    //CSD[08] -> [63:56]
+        c_size |= (uint32_t)csd[9];      //CSD[09] -> [55:48];
+        c_size = (c_size + 1);
+      }else{
+        //Must be a v1 device.
+        //Extract the C_SIZE field from the response.  It is a 12-bit number in bit position 73:62.
+        //Although it is only a 12-bit number, it spans bytes 6, 7, and 8, since it isn't byte aligned.
+        c_size = ((unsigned long)csd[6] << 16) | ((unsigned int)csd[7] << 8) | csd[8];    //Get the bytes in the correct positions
+        c_size &= 0x0003FFC0;    //Clear all bits that aren't part of the C_SIZE
+        c_size = c_size >> 6;    //Shift value down, so the 12-bit C_SIZE is properly right justified in the unsigned long.
+        //Extract the C_SIZE_MULT field from the response.  It is a 3-bit number in bit position 49:47.
+        size_mult = ((unsigned int)((csd[9] & 0x03) << 1)) | ((unsigned int)((csd[10] & 0x80) >> 7));
+        //Extract the BLOCK_LEN field from the response. It is a 4-bit number in bit position 83:80.
+        block_len = csd[5] & 0x0F;
+        block_len = 1 << (block_len - 9); //-9 because we report the size in sectors of 512 bytes each
+        c_size = ((unsigned long)(c_size + 1) * (unsigned int)((unsigned int)1 << (size_mult + 2)) * block_len) - 1;
+      }
+
+    }
 
 
 
@@ -300,48 +327,9 @@ uint8_t sd_card_type (void){
   return CardType;
 }
 
-uint8_t* sd_card_csd (void){
-  return (uint8_t*) &csd;
-}
-
 
 uint32_t sd_card_size (void){
-  uint32_t size, size_mult, block_len;
-
-  if (!csd_read)
-    return 0;
-
-  if(csd[0] & 0xC0) {                      //Check CSD_STRUCTURE field for v2+ struct device
-    // Must be a v2 device (or a reserved higher version, that doesn't currently exist)
-    // Extract the C_SIZE field from the response.  It is a 22-bit number in bit position 69:48.
-    // This is different from v1.
-    // It spans bytes 7, 8, and 9 of the response.
-
-
-
-    size = ((uint32_t)(csd[7] & 0x3F))<<16; //CSD[07] -> [71:64]
-    size |= ((uint32_t)csd[8])<<8;    //CSD[08] -> [63:56]
-    size |= (uint32_t)csd[9];      //CSD[09] -> [55:48];
-    size = (size + 1);
-
-
-
-  }else{
-    //Must be a v1 device.
-    //Extract the C_SIZE field from the response.  It is a 12-bit number in bit position 73:62.
-    //Although it is only a 12-bit number, it spans bytes 6, 7, and 8, since it isn't byte aligned.
-    size = ((unsigned long)csd[6] << 16) | ((unsigned int)csd[7] << 8) | csd[8];    //Get the bytes in the correct positions
-    size &= 0x0003FFC0;    //Clear all bits that aren't part of the C_SIZE
-    size = size >> 6;    //Shift value down, so the 12-bit C_SIZE is properly right justified in the unsigned long.
-    //Extract the C_SIZE_MULT field from the response.  It is a 3-bit number in bit position 49:47.
-    size_mult = ((unsigned int)((csd[9] & 0x03) << 1)) | ((unsigned int)((csd[10] & 0x80) >> 7));
-    //Extract the BLOCK_LEN field from the response. It is a 4-bit number in bit position 83:80.
-    block_len = csd[5] & 0x0F;
-    block_len = 1 << (block_len - 9); //-9 because we report the size in sectors of 512 bytes each
-    size = ((unsigned long)(size + 1) * (unsigned int)((unsigned int)1 << (size_mult + 2)) * block_len) - 1;
-  }
-
-  return size;
+  return c_size;
 }
 
 

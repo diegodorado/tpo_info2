@@ -10,7 +10,7 @@
 
 #include "../app/fsm/fsm_client.h"
 #include "../app/fsm/fsm_playback.h"
-#include "../app/fsm/fsm_write.h"
+#include "../app/fsm/fsm_storage.h"
 
 
 #endif /* FSM_H_ */

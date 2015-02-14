@@ -26,6 +26,6 @@
 #define KEY_PIN(i) KEY##i##_PIN
 
 void keyboard_setup(void);
-void keyboard_handle_key(uint8_t);
+void keyboard_set_handler(void (*handler)( uint8_t key));
 
 #endif /* KEYBOARD_H_ */

@@ -9,7 +9,7 @@
 #include "fsm_client.h"
 
 
-static fsm_client_state_t state = FSM_CLIENT_STATE_IDLE; // estado inicial
+static volatile  fsm_client_state_t state = FSM_CLIENT_STATE_IDLE; // estado inicial
 
 // funciones primitivas de los estados
 static void idle( void);
@@ -48,8 +48,6 @@ fsm_client_state_t fsm_client_state()
 void fsm_client_update(void)
 {
   // implementada con punteros a funcion
-  // cambiando fsm_main_state se cambia el estado de la maquina
-  // En este caso, cada estado es una submaquina.
   (*state_table[ state ])();
 }
 
@@ -168,7 +166,7 @@ static void processing_status( void)
 
   data_ptr = (uint8_t*) &data;
 
-  storage_disk_status(&status);
+  //storage_disk_status(&status);
   if( status.sd_status!=0)
     status.files_count = 0;
 
@@ -201,13 +199,13 @@ static void processing_command( void)
   lcd_print_char( '0' + *messageData(last_request) );
 
   switch (*messageData(last_request)) {
-    case COMMAND_FORMAT_SD:
+ /*   case COMMAND_FORMAT_SD:
       if(storage_format_disk()==0)
         client_send_status_response(last_request, STATUS_OK);
       else
         client_send_status_response(last_request, STATUS_ERROR);
 
-      break;
+      break;*/
     default:
       client_send_status_response(last_request, STATUS_OK);
       break;

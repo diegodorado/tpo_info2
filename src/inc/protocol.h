@@ -169,6 +169,18 @@ typedef enum {
   COMMAND_MAX_VALID_TYPE,
 } command_type_t;
 
+
+
+typedef enum {
+  SD_STATUS_OK,
+  SD_STATUS_NOT_DETECTED,
+  SD_STATUS_SETUP_FAILURE,
+  SD_STATUS_READ_FAILURE,
+  SD_STATUS_WRITE_FAILURE,
+  SD_STATUS_WRONG_FORMAT,
+  SD_STATUS_INVALID_SIZE,
+} sd_status_t;
+
 typedef struct
 {
   uint16_t  data_length;
@@ -197,8 +209,7 @@ typedef struct
 {
   uint8_t  sd_status; //0: no error
   uint8_t  files_count;
-  uint32_t disk_space;
-  uint32_t available_space;
+  uint32_t blocks_count;
   uint32_t last_block; // indice del ultimo bloque libre de la SD
 } status_hdr_t;
 
