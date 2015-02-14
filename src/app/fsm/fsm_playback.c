@@ -7,8 +7,8 @@
 
 #include "fsm_playback.h"
 
-fsm_playback_state_t previous_state = FSM_PLAYBACK_STATE_IDLE;
-fsm_playback_state_t state = FSM_PLAYBACK_STATE_IDLE;
+static volatile fsm_playback_state_t previous_state = FSM_PLAYBACK_STATE_IDLE;
+static volatile fsm_playback_state_t state = FSM_PLAYBACK_STATE_IDLE;
 
 
 
@@ -24,7 +24,7 @@ static void previous( void);
 
 
 // definicion de la tabla de punteros a funcion
-// que debe corresponderse con fsm_client_state_t
+// que debe corresponderse con fsm_playback_state_t
 static void (* const state_table[])(void) = {
   idle,
   playing,
@@ -39,8 +39,6 @@ static void (* const state_table[])(void) = {
 void fsm_playback_update(void)
 {
   // implementada con punteros a funcion
-  // cambiando fsm_main_state se cambia el estado de la maquina
-  // En este caso, cada estado es una submaquina.
   (*state_table[ state ])();
 }
 
@@ -121,6 +119,32 @@ static void previous( void){
 	  // continue with previous state
 	  fsm_playback_change(previous_state);
 
+}
+
+
+// keyboard handler
+void fsm_playback_keyboard_handler(uint8_t key){
+
+  if(key == 3){
+    fsm_playback_change(FSM_PLAYBACK_STATE_PREVIOUS);
+  }
+  else if(key == 2){
+   if(fsm_playback_state()==FSM_PLAYBACK_STATE_PLAYING)
+   {
+    fsm_playback_change(FSM_PLAYBACK_STATE_PAUSE);
+   }
+   else
+   {
+    fsm_playback_change(FSM_PLAYBACK_STATE_PLAY);
+   }
+  }
+  else if(key == 1){
+
+   fsm_playback_change(FSM_PLAYBACK_STATE_STOP);
+  }
+  else if(key == 0){
+    fsm_playback_change(FSM_PLAYBACK_STATE_NEXT);
+  }
 }
 
 

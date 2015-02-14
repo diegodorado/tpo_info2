@@ -20,36 +20,19 @@ static uint8_t clear();
 static uint8_t set_cursor(uint8_t row, uint8_t col);
 static uint8_t set_cursor_i(uint8_t i);
 static uint8_t refresh_chars(void);
-static uint8_t command(uint8_t value);
+static uint8_t command(uint8_t value, uint32_t settleTime);
 static uint8_t write(uint8_t value);
-static uint8_t write4bits( uint8_t value);
+static uint8_t write4bits( uint8_t value, uint32_t settleTime);
 
-
-
-
-
-
-
+// for initialization purposes
+static void write_4_bits_sync(uint8_t value, uint32_t settleTime);
+static void command_sync(uint8_t value, uint32_t settleTime);
 
 
 void lcd_setup(void)
 {
 
-  // When the display powers up, it is configured as follows:
-  //
-  // 1. Display clear
-  // 2. Function set:
-  //    DL = 1; 8-bit interface data
-  //    N = 0; 1-line display
-  //    F = 0; 5x8 dot character font
-  // 3. Display on/off control:
-  //    D = 0; Display off
-  //    C = 0; Cursor off
-  //    B = 0; Blinking off
-  // 4. Entry mode set:
-  //    I/D = 1; Increment by 1
-  //    S = 0; No shift
-  //
+
   gpio_set_dir(LCD_PIND4, 1);
   gpio_set_dir(LCD_PIND5, 1);
   gpio_set_dir(LCD_PIND6, 1);
@@ -57,47 +40,39 @@ void lcd_setup(void)
   gpio_set_dir(LCD_PINRS, 1);
   gpio_set_dir(LCD_PINE, 1);
 
-
-  timer0_delay_us(20000);  //20ms de startup
-
-
   // Now we pull both RS and R/W low to begin commands
-  gpio_set_pin(LCD_PINRS, LCD_LOW);
-  gpio_set_pin(LCD_PINE, LCD_LOW);
+  mode_low();
+  pulse_enable_low();
+  timer0_delay_us(100000);  //100ms de startup
 
-  // we start in 8bit mode, try to set 4 bit mode
-  write_4_bits(0x03);
-  timer0_delay_us(4100); // wait min 4.1ms
+  write_4_bits_sync(0x03 , 4100); // we start in 8bit mode, try to set 4 bit mode and wait min 4.1ms
+  write_4_bits_sync(0x03 , 100); // second try
+  write_4_bits_sync(0x03 , 100); // third go!
+  write_4_bits_sync(0x02 , 100); // finally, set to 4-bit interface
 
-  // second try
-  write_4_bits(0x03);
-  timer0_delay_us(4100); // wait min 4.1ms
-
-  // third go!
-  write_4_bits(0x03);
-  timer0_delay_us(150); //150 us
-
-  // finally, set to 8-bit interface
-  write_4_bits(0x02);
-
-  // finally, set # lines, font size, etc.
-  while(command(LCD_FUNCTIONSET | LCD_4BITMODE | LCD_1LINE | LCD_5x8DOTS | LCD_2LINE)==0);
-
-  // turn the display on with no cursor or blinking default
-  while(command(LCD_DISPLAYCONTROL | LCD_DISPLAYON | LCD_CURSOROFF | LCD_BLINKOFF)==0);
-
-  // clear it off
-  while(command(LCD_CLEARDISPLAY)==0);
-  // clear display, set cursor position to zero
-  timer0_delay_us(2000);  // this command takes a long time!
-
-  // Initialize to default text direction (for romance languages)
-  // set the entry mode
-  while(command(LCD_ENTRYMODESET | LCD_ENTRYLEFT | LCD_ENTRYSHIFTDECREMENT)==0);
-
+  command_sync(0x28,100); // finally, set # lines, font size, etc.
+  command_sync(0x08,100); // turn the display off with no cursor or blinking default
+  command_sync(0x01,1000);  // clear it off:  this command takes a long time!
+  command_sync(0x06,100); // Initialize to default text direction
+  command_sync(0x0C,100); // turn display on
 
 
 }
+
+static void write_4_bits_sync(uint8_t value, uint32_t settleTime){
+  write_4_bits(value);
+  pulse_enable_low();
+  timer0_delay_us(1);
+  pulse_enable_high();
+  timer0_delay_us(1); // enable pulse must be >450ns
+  pulse_enable_low();
+  timer0_delay_us(settleTime);
+}
+
+static void command_sync(uint8_t value, uint32_t settleTime) {
+  write_4_bits_sync(value>>4 , 1);
+  write_4_bits_sync(value , settleTime);
+ }
 
 
 
@@ -119,21 +94,14 @@ void lcd_refresh(void)
 
 static uint8_t clear()
 {
-  static uint32_t since;
-
   crBegin;
-  while (!command(LCD_CLEARDISPLAY))
-    crReturn(0);
-
-  since =  timer0_us();
-  while ((uint32_t) (timer0_us() - since) < 2000 )
+  while (!command(LCD_CLEARDISPLAY,1000))
     crReturn(0);
 
   has_to_clear = 0;
   crFinish;
 
   return 1;
-
 
 }
 
@@ -145,7 +113,7 @@ static uint8_t set_cursor(uint8_t row, uint8_t col)
   if ( row > 0 )
     offset = 0x40;
 
-  return command(LCD_SETDDRAMADDR | (offset + col));
+  return command(LCD_SETDDRAMADDR | (offset + col),20);
 }
 
 static uint8_t set_cursor_i(uint8_t i)
@@ -200,15 +168,15 @@ static uint8_t refresh_chars(void){
 
 
 
-static uint8_t command(uint8_t value) {
+static uint8_t command(uint8_t value, uint32_t settleTime) {
 
   crBegin;
   mode_low();
 
-  while (!write4bits(value>>4))
+  while (!write4bits(value>>4,1))
     crReturn(0);
 
-  while (!write4bits(value))
+  while (!write4bits(value,settleTime))
     crReturn(0);
 
   crFinish;
@@ -220,17 +188,17 @@ static uint8_t write(uint8_t value) {
   crBegin;
   mode_high();
 
-  while (!write4bits(value>>4))
+  while (!write4bits(value>>4,1))
     crReturn(0);
 
-  while (!write4bits(value))
+  while (!write4bits(value,20))
     crReturn(0);
 
   crFinish;
   return 1;
 }
 
-static uint8_t write4bits( uint8_t value)
+static uint8_t write4bits( uint8_t value, uint32_t settleTime)
 {
 
   static uint32_t since;
@@ -241,7 +209,7 @@ static uint8_t write4bits( uint8_t value)
 
   pulse_enable_low();
   since =  timer0_us();
-  while ((uint32_t) (timer0_us() - since) < 40 )
+  while ((uint32_t) (timer0_us() - since) < 1 )
     crReturn(0);
 
   pulse_enable_high();
@@ -250,12 +218,10 @@ static uint8_t write4bits( uint8_t value)
     crReturn(0);
 
 
-
   pulse_enable_low();
   since =  timer0_us();
-  while ((uint32_t) (timer0_us() - since) < 40 )
+  while ((uint32_t) (timer0_us() - since) < settleTime )
     crReturn(0);
-
 
   crFinish;
   return 1;
@@ -299,7 +265,7 @@ static void mode_high(void) {
 
 
 
-
+// interface functions: only touches buffer... doesnt really play with LCD directly
 
 void lcd_clear()
 {

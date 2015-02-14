@@ -6,98 +6,192 @@
  */
 
 #include "storage.h"
+#include "drivers.h"
 
+static volatile uint32_t block_index=0; ///needed?
+static volatile status_hdr_t status;
 
-
-static volatile uint8_t buffer[512];
-static volatile uint16_t buffer_in=0;
-static volatile uint16_t buffer_out=0;
-static volatile uint32_t block_index=0;
+static volatile uint8_t card_detected;
+static volatile uint8_t last_card_detected;
+static void storage_debounce_card_detected(void);
 
 
 void storage_setup(void)
 {
-  //todo: implementar la inicializacion
-}
 
-uint8_t sd_card_test(void)
-{
-  uint8_t buffer1[N_BLOCKS * 512], buffer2[N_BLOCKS * 512] = { 0 };
-  uint32_t i;
-  uint8_t result = 0;
+  set_pin_sel( STORAGE_CARD_DETECT_PIN,0); // as gpio
+  gpio_set_dir(STORAGE_CARD_DETECT_PIN,0); // as input
+  set_pin_mode(STORAGE_CARD_DETECT_PIN,0); // with pull up resistor
 
-  if ( !sd_card_setup() )
-    result = 1;
+  // get initial values (not debounced though)
+  card_detected = last_card_detected = gpio_get_pin(STORAGE_CARD_DETECT_PIN,0);
+  //debounce every 200ms
+  systick_delay_async(200, 1,storage_debounce_card_detected);
 
-  for (i = 0; i < N_BLOCKS * 512; i++)
-  {
-    buffer1[i] = i % 512;
-  }
-
-  if ( sd_card_write(buffer1, N_BLOCKS, START_BLOCK) )
-  {
-    if ( sd_card_read(buffer2, N_BLOCKS, START_BLOCK) )
-    {
-      for (i = 0; i < N_BLOCKS * 512; i++)
-      {
-        if ( buffer1[i] != buffer2[i] )
-        {
-          result = 2;
-          break;
-        }
-      }
-    }
-    else
-      result = 3;
-  }
-  else
-    result = 4;
-
-  return result;
+  storage_boot_sd();
 
 }
 
-uint8_t sd_card_write_test(char * text)
-{
-  uint8_t buf[512];
-  uint32_t i;
 
-  // fill with text or zeros
-  for (i = 0; i < 512; i++)
-  {
-    if ( *text )
-      buf[i] = *text++;
-    else
-      buf[i] = 0;
+
+static void storage_debounce_card_detected(void){
+  // read if CD to ground
+  uint8_t current_card_detected = gpio_get_pin(STORAGE_CARD_DETECT_PIN,0);
+
+  //check if value changed and kept its value on subsequent tick
+  if (current_card_detected != card_detected  && current_card_detected == last_card_detected )
+    card_detected  = current_card_detected;
+
+  // memoize value
+  last_card_detected  = current_card_detected;
+}
+
+
+
+void storage_boot_sd(void){
+
+  uint8_t buf[FILECHUNK_SIZE];
+  uint8_t* buf_ptr = buf;
+  int i;
+
+  status.blocks_count = 0;
+  status.files_count = 0;
+
+
+  if ( !sd_card_setup() ){
+    status.sd_status = SD_STATUS_SETUP_FAILURE;
+    return;
   }
 
-  if ( !sd_card_setup() )
-    return 1; //error 1
-  else if ( !sd_card_write(buf, 1, 0) )
-    return 2; //error 2
 
-  return 0; //no errors
+  if ( !sd_card_read(buf_ptr, 1, STORAGE_DISK_HEADER_BLOCK ) )
+  {
+    status.sd_status = SD_STATUS_READ_FAILURE;
+    return;
+  }
+
+  if ( *( (uint32_t*) buf_ptr) != STORAGE_DISK_HEADER_HEAD)
+  {
+    status.sd_status = SD_STATUS_WRONG_FORMAT;
+    return;
+  }
+
+  // avanzo el buffer
+  buf_ptr+= sizeof(STORAGE_DISK_HEADER_HEAD);
+
+  for (i = 0; i < sizeof(status_hdr_t); i++)
+    *((uint8_t*) &status + i) = *buf_ptr++;
+
+  if ( *( (uint32_t*) buf_ptr) != STORAGE_DISK_HEADER_TAIL){
+    status.sd_status = SD_STATUS_WRONG_FORMAT;
+    return;
+  }
+
+  status.blocks_count = sd_card_size();
+
+  if(status.blocks_count == 0){
+    status.sd_status = SD_STATUS_INVALID_SIZE;
+    return;
+  }
+
+  status.sd_status = SD_STATUS_OK; //overwrite what was read from sd
+
 
 }
 
-uint8_t sd_card_read_test(char * text, uint8_t size)
+int storage_card_detected(){
+  return card_detected;
+}
+
+sd_status_t storage_sd_status(){
+  return status.sd_status;
+}
+
+uint8_t  storage_sd_files_count(){
+  return status.files_count;
+}
+
+uint32_t storage_sd_blocks_count(){
+  return status.blocks_count;
+}
+
+uint32_t storage_sd_last_block(){
+  return status.last_block;
+}
+
+
+
+
+void storage_format_sd(void)
+{
+  uint32_t last_block = STORAGE_FILE_HEADERS_START_BLOCK + STORAGE_FILE_HEADERS_BLOCKS_COUNT;
+  storage_write_header(0 , last_block );
+}
+
+
+
+int storage_write_header(uint32_t files_count,uint32_t last_block)
+{
+  uint8_t buf[FILECHUNK_SIZE];
+  uint8_t* buf_ptr = buf;
+  status_hdr_t status;
+  int i;
+
+  status.files_count = files_count;
+  status.last_block = last_block;
+
+  *( (uint32_t*) buf_ptr) = STORAGE_DISK_HEADER_HEAD;
+
+  // avanzo el buffer
+  buf_ptr+= sizeof(STORAGE_DISK_HEADER_HEAD);
+
+  for (i = 0; i < sizeof(status_hdr_t); i++)
+    *buf_ptr++ = *((uint8_t*) &status + i);
+
+  *( (uint32_t*) buf_ptr) = STORAGE_DISK_HEADER_TAIL;
+
+  if ( !sd_card_write(buf, 1, STORAGE_DISK_HEADER_BLOCK ) )
+    return (status.sd_status = SD_STATUS_WRITE_FAILURE);
+
+  return 0;
+}
+
+int storage_get_file_headers(fileheader_data_t * file_headers, uint8_t files_count)
 {
 
-  uint8_t buf[512];
-  uint32_t i;
-
-  if ( !sd_card_setup() )
-    return 1; //error 1
-  else if ( !sd_card_read(buf, 1, 0) )
-    return 2; // error 2
-
-  // fill text with returned buffer
-  for (i = 0; i < size; i++)
-  {
-    *text++ = buf[i];
-  }
+  if ( !sd_card_read( (uint8_t*) file_headers, STORAGE_FILE_HEADERS_BLOCKS_COUNT, STORAGE_FILE_HEADERS_START_BLOCK) )
+    return (status.sd_status = SD_STATUS_READ_FAILURE);
 
   return 0; // no errors
 
 }
+
+
+int storage_save_file_header(fileheader_data_t * file_header)
+{
+
+  fileheader_data_t file_headers[STORAGE_FILE_HEADERS_MAX_COUNT];
+  uint8_t file_headers_index;
+
+  if( storage_get_file_headers(file_headers, status.files_count)!=0)
+    return status.sd_status;
+
+  file_header->block_start = status.last_block;
+  status.last_block += file_header->chunks_count;
+  status.files_count++;
+
+  // save the new disk header
+  if (storage_write_header(status.files_count , status.last_block )!=0)
+    return 3; //error 3
+
+  file_headers_index = status.files_count / 16;
+
+  if ( !sd_card_write((uint8_t*)&file_headers[file_headers_index], 1, STORAGE_FILE_HEADERS_START_BLOCK + file_headers_index ) )
+    return 4; // error 4
+
+  return 0; // no errors
+
+}
+
+
 

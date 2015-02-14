@@ -41,5 +41,9 @@
 uint32_t sd_card_setup (void);
 uint8_t sd_card_read (uint8_t* buf, uint32_t size, uint32_t block);
 uint8_t sd_card_write (uint8_t* buf, uint32_t size, uint32_t block);
+uint8_t sd_card_type (void);
+
+uint32_t sd_card_size (void);
+
 
 #endif /* KITINFO2FW_SDCARD_H_ */
