@@ -166,17 +166,12 @@ static void processing_status( void)
 
   data_ptr = (uint8_t*) &data;
 
-  //storage_disk_status(&status);
-  if( status.sd_status!=0)
-    status.files_count = 0;
-
   for(i = 0; i < sizeof(status_hdr_t) ; i++)
     *data_ptr++ = *( ( (uint8_t*) &status ) + i);
 
   if( storage_get_file_headers(file_headers, status.files_count)!=0)
   {
     status.files_count = 0;
-    status.sd_status = 4; //couldnt get files info
   }
 
   for(i = 0; i < sizeof(fileheader_data_t) * status.files_count ; i++)

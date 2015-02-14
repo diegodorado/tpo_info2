@@ -10,6 +10,7 @@
 
 static volatile uint32_t block_index=0; ///needed?
 static volatile status_hdr_t status;
+static volatile storage_sd_status_t sd_status;
 
 static volatile uint8_t card_detected;
 static volatile uint8_t last_card_detected;
@@ -59,20 +60,20 @@ void storage_boot_sd(void){
 
 
   if ( !sd_card_setup() ){
-    status.sd_status = SD_STATUS_SETUP_FAILURE;
+    sd_status = SD_STATUS_SETUP_FAILURE;
     return;
   }
 
 
   if ( !sd_card_read(buf_ptr, 1, STORAGE_DISK_HEADER_BLOCK ) )
   {
-    status.sd_status = SD_STATUS_READ_FAILURE;
+    sd_status = SD_STATUS_READ_FAILURE;
     return;
   }
 
   if ( *( (uint32_t*) buf_ptr) != STORAGE_DISK_HEADER_HEAD)
   {
-    status.sd_status = SD_STATUS_WRONG_FORMAT;
+    sd_status = SD_STATUS_WRONG_FORMAT;
     return;
   }
 
@@ -83,18 +84,18 @@ void storage_boot_sd(void){
     *((uint8_t*) &status + i) = *buf_ptr++;
 
   if ( *( (uint32_t*) buf_ptr) != STORAGE_DISK_HEADER_TAIL){
-    status.sd_status = SD_STATUS_WRONG_FORMAT;
+    sd_status = SD_STATUS_WRONG_FORMAT;
     return;
   }
 
   status.blocks_count = sd_card_size();
 
   if(status.blocks_count == 0){
-    status.sd_status = SD_STATUS_INVALID_SIZE;
+    sd_status = SD_STATUS_INVALID_SIZE;
     return;
   }
 
-  status.sd_status = SD_STATUS_OK; //overwrite what was read from sd
+  sd_status = SD_STATUS_OK; //overwrite what was read from sd
 
 
 }
@@ -103,8 +104,8 @@ int storage_card_detected(){
   return card_detected;
 }
 
-sd_status_t storage_sd_status(){
-  return status.sd_status;
+storage_sd_status_t storage_sd_status(){
+  return sd_status;
 }
 
 uint8_t  storage_sd_files_count(){
@@ -151,7 +152,7 @@ int storage_write_header(uint32_t files_count,uint32_t last_block)
   *( (uint32_t*) buf_ptr) = STORAGE_DISK_HEADER_TAIL;
 
   if ( !sd_card_write(buf, 1, STORAGE_DISK_HEADER_BLOCK ) )
-    return (status.sd_status = SD_STATUS_WRITE_FAILURE);
+    return (sd_status = SD_STATUS_WRITE_FAILURE);
 
   return 0;
 }
@@ -160,7 +161,7 @@ int storage_get_file_headers(fileheader_data_t * file_headers, uint8_t files_cou
 {
 
   if ( !sd_card_read( (uint8_t*) file_headers, STORAGE_FILE_HEADERS_BLOCKS_COUNT, STORAGE_FILE_HEADERS_START_BLOCK) )
-    return (status.sd_status = SD_STATUS_READ_FAILURE);
+    return (sd_status = SD_STATUS_READ_FAILURE);
 
   return 0; // no errors
 
@@ -174,7 +175,7 @@ int storage_save_file_header(fileheader_data_t * file_header)
   uint8_t file_headers_index;
 
   if( storage_get_file_headers(file_headers, status.files_count)!=0)
-    return status.sd_status;
+    return sd_status;
 
   file_header->block_start = status.last_block;
   status.last_block += file_header->chunks_count;

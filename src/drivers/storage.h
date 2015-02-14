@@ -23,8 +23,20 @@ void storage_setup(void);
 #define STORAGE_FILE_HEADERS_BLOCKS_COUNT 8
 #define STORAGE_FILE_HEADERS_MAX_COUNT 128
 
+
+typedef enum {
+  SD_STATUS_OK,
+  SD_STATUS_NOT_DETECTED,
+  SD_STATUS_SETUP_FAILURE,
+  SD_STATUS_READ_FAILURE,
+  SD_STATUS_WRITE_FAILURE,
+  SD_STATUS_WRONG_FORMAT,
+  SD_STATUS_INVALID_SIZE,
+} storage_sd_status_t;
+
+
 int storage_card_detected();
-sd_status_t storage_sd_status();
+storage_sd_status_t storage_sd_status();
 uint8_t  storage_sd_files_count();
 uint32_t storage_sd_blocks_count();
 uint32_t storage_sd_last_block();
