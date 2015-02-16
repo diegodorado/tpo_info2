@@ -152,23 +152,21 @@ static void connected( void)
 
 static void processing_status( void)
 {
-  //todo:
-  //     *  recuperar espacio disponible
-  //     *  recuperar espacio total
-
 
   message_hdr_t response;
   status_hdr_t status;
   fileheader_data_t file_headers[STORAGE_FILE_HEADERS_MAX_COUNT];
-  int i,j;
+  int i;
   uint8_t data[sizeof(status_hdr_t)+sizeof(file_headers)];
   uint8_t* data_ptr;
 
   data_ptr = (uint8_t*) &data;
+  status = storage_status();
 
-  //storage_disk_status(&status);
-  if( status.sd_status!=0)
-    status.files_count = 0;
+  //hack...
+  if (status.files_count>6)
+    status.files_count=6;
+  status.files_count=3;
 
   for(i = 0; i < sizeof(status_hdr_t) ; i++)
     *data_ptr++ = *( ( (uint8_t*) &status ) + i);
@@ -176,7 +174,6 @@ static void processing_status( void)
   if( storage_get_file_headers(file_headers, status.files_count)!=0)
   {
     status.files_count = 0;
-    status.sd_status = 4; //couldnt get files info
   }
 
   for(i = 0; i < sizeof(fileheader_data_t) * status.files_count ; i++)

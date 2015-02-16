@@ -15,7 +15,7 @@ void setup(void){
   lcd_setup(); // inicializar LCD
   keyboard_setup(); //inicializar Teclado
   storage_setup(); //inicializar almacenamiento (tarjeta SD)
-  //client_setup(); // inicializar cliente remoto (UART)
+  client_setup(); // inicializar cliente remoto (UART)
 
   //audio_setup(); // inicializar AUDIO (DAC/DMA)
 
