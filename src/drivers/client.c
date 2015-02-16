@@ -16,16 +16,6 @@
 
 static volatile uint32_t seconds = 0;
 
-static uint8_t minutes_only(void){
-  int aux = seconds;
-  aux /= 60;
-  return aux % 60;
-}
-
-static uint8_t seconds_only(void){
-  return seconds % 60;
-}
-
 static void update_lcd_timer(void){
   char str_clck[] = "00:00";
 
@@ -46,13 +36,11 @@ static void update_lcd_timer(void){
 uint8_t client_has_message()
 {
   uint8_t data;
-  uint8_t has_data = 0;
   // fill message buffer if there is data on serial buffer
   while( client_data_size()>0 )
   {
     data = client_rx_pop();
     messagesBufferPush( data );
-    has_data = 1;
   }
 
   // return 1 if meesage buffer has a complete message checked

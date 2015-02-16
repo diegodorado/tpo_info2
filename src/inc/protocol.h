@@ -181,18 +181,20 @@ typedef struct
 
 
 
-typedef struct {
- char filename[8];
- uint32_t length;
- uint32_t chunks_count;
- uint32_t block_start; // indice de bloque de la SD donde comienza el audio del archivo
- uint32_t sample_rate;
- uint32_t RESERVED0[2]; // para alinear de a 32 bytes
+typedef struct
+{
+  char filename[8];
+  uint32_t length;
+  uint32_t chunks_count;
+  uint32_t block_start; // indice de bloque de la SD donde comienza el audio del archivo
+  uint32_t sample_rate;
+  uint32_t RESERVED0[2]; // para alinear de a 32 bytes
 } fileheader_data_t;
 
 typedef struct
 {
-  uint8_t  files_count;
+  uint8_t files_count;
+  uint8_t RESERVED0[3]; // para alinear
   uint32_t blocks_count;
   uint32_t last_block; // indice del ultimo bloque libre de la SD
 } status_hdr_t;
@@ -211,7 +213,7 @@ buffer_status_t messagesBufferProcess ( void);
 void messagesBufferPush ( uint8_t data );
 uint8_t* messagesBufferPop( void);
 uint8_t* messageData(message_hdr_t* message);
-
+void messagesBufferClear();
 
 
 /*END OF C/C++ COMMON CODE - (do not code below this line)*/

@@ -40,12 +40,11 @@ storage_sd_status_t storage_sd_status();
 uint8_t  storage_sd_files_count();
 uint32_t storage_sd_blocks_count();
 uint32_t storage_sd_last_block();
-
-
+status_hdr_t storage_status();
 
 void storage_boot_sd(void);
 void storage_format_sd(void);
-int storage_write_header(uint32_t files_count,uint32_t last_block);
+int storage_write_header(uint8_t files_count,uint32_t last_block);
 int storage_get_file_headers(fileheader_data_t * file_headers, uint8_t files_count);
 int storage_save_file_header(fileheader_data_t * file_header);
 

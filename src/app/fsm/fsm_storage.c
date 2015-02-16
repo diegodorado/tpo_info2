@@ -131,7 +131,11 @@ static void ok( void){
   //do nothing
   if(status_entered()){
     lcd_clear();
-    lcd_print_at("SD OK", 0, 0);
+    lcd_print_at("FILES:", 0, 0);
+    lcd_print_at("LAST BLOCK:", 1, 0);
+    lcd_print_int_at(storage_sd_files_count(),5,0,15);
+    lcd_print_int_at(storage_sd_last_block(),5,1,15);
+
   }
 }
 
