@@ -284,19 +284,19 @@ static void process_status( message_hdr_t* message)
 
 static void process_command( message_hdr_t* message)
 {
-  fileheader_data_t file_header;
+  fileheader_data_t f;
 
-  file_header.filename[0] = 'A';
-  file_header.filename[1] = 'B';
-  file_header.filename[2] = 'C';
-  file_header.filename[3] = 'D';
-  file_header.filename[4] = 'e';
-  file_header.filename[5] = 'f';
-  file_header.filename[6] = 'g';
-  file_header.filename[7] = 'h';
-  file_header.chunks_count = 40;
+  f.filename[0] = 'A';
+  f.filename[1] = 'B';
+  f.filename[2] = 'C';
+  f.filename[3] = 'D';
+  f.filename[4] = 'e';
+  f.filename[5] = 'f';
+  f.filename[6] = 'g';
+  f.filename[7] = 'h';
+  f.chunks_count = 40;
 
-  storage_save_file_header(file_header);
+  storage_save_file_header(f);
   lcd_print_at("CMD RX:",1,0);
   lcd_print_char( '0' + *messageData(message) );
   client_send_status_response(message, STATUS_OK);
@@ -347,14 +347,14 @@ static void process_filechunk( message_hdr_t* message)
     else
     {
       //lcd_print_int_at((file_header.chunks_count-chunk.chunk_id),5,1,15);
-      lcd_print_int_at((chunk.chunk_id*100),5,1,15);
+      //lcd_print_int_at((chunk.chunk_id*100),5,1,15);
 
       //lcd_print_int_at(chunk.chunk_id,5,0,15);
       lcd_print_int_at((file_header.chunks_count-1),5,0,15);
       lcd_print_at("        ",0,0);
-      lcd_print_int_at(chunk.chunk_id,3,0,7);
+      lcd_print_int_at(chunk.chunk_id,4,0,7);
+      lcd_print_int_at((chunk.chunk_id*100)/(file_header.chunks_count-1),4,1,3);
       lcd_print_char_at('%',1,0);
-      lcd_print_int_at((chunk.chunk_id*100)/(file_header.chunks_count-1),3,1,3);
     }
 
     client_send_message_response(message, (uint8_t*)  &chunk);
