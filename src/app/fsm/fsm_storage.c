@@ -14,7 +14,7 @@ static volatile uint8_t fetching_sd_status = 0;
 static void fetching_sd_status_callback(void);
 static volatile uint8_t formatting_sd = 0;
 static void formatting_sd_callback(void);
-static void check_card_detected( void);
+static void turn_rgb_off(void);
 
 static volatile int prev_tick_state = -1; // used to check first entry to state
 static volatile fsm_storage_state_t state = FSM_STORAGE_STATE_BOOTING;
@@ -80,6 +80,9 @@ static uint8_t status_entered(void)
 
 static void booting( void){
 
+  if(status_entered())
+    device_rgb_set(DEVICE_RGB_BLUE);
+
   //start
   if(fetching_sd_status==0){
     lcd_clear();
@@ -97,6 +100,7 @@ static void booting( void){
 
   //finish
   if(fetching_sd_status==2){
+    lcd_clear();
 
     switch (storage_sd_status()) {
       case SD_STATUS_OK:
@@ -130,6 +134,8 @@ static void booting( void){
 static void ok( void){
   //do nothing
   if(status_entered()){
+    device_rgb_set(DEVICE_RGB_GREEN);
+    systick_delay_async(1000, 0,turn_rgb_off);
     lcd_clear();
     lcd_print_at("FILES:", 0, 0);
     lcd_print_at("LAST BLOCK:", 1, 0);
@@ -142,6 +148,7 @@ static void ok( void){
 static void not_detected( void){
   // print only once
   if(status_entered()){
+    device_rgb_set(DEVICE_RGB_RED);
     lcd_clear();
     lcd_print_at("INSERTE SD", 0, 0);
   }
@@ -153,6 +160,7 @@ static void not_detected( void){
 static void wrong_format( void) {
   // print only once
   if(status_entered()){
+    device_rgb_set(DEVICE_RGB_RED);
     lcd_clear();
     lcd_print_at("SD WRONG FORMAT", 0, 0);
     lcd_print_at("* PLAY TO FORMAT", 1, 0);
@@ -162,6 +170,9 @@ static void wrong_format( void) {
 }
 
 static void formating( void){
+
+  if(status_entered())
+    device_rgb_set(DEVICE_RGB_BLUE);
 
   //start
   if(formatting_sd==0){
@@ -181,6 +192,7 @@ static void formating( void){
 
   //finish
   if(formatting_sd==2){
+    lcd_clear();
     fsm_storage_change(FSM_STORAGE_STATE_BOOTING);
     formatting_sd = 0;
     return;
@@ -192,6 +204,7 @@ static void formating( void){
 static void error( void){
   // print only once
   if(status_entered()){
+    device_rgb_set(DEVICE_RGB_RED);
     lcd_clear();
     switch (storage_sd_status()) {
       case SD_STATUS_SETUP_FAILURE:
@@ -215,6 +228,10 @@ static void error( void){
 
 
 // callbacks
+
+static void turn_rgb_off(void){
+  device_rgb_set(DEVICE_RGB_NONE);
+}
 
 static void fetching_sd_status_callback(void){
   fetching_sd_status = 2;

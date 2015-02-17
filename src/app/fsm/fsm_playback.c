@@ -23,6 +23,23 @@ static void previous( void);
 
 
 
+static volatile uint32_t seconds = 0;
+
+static void update_lcd_timer(void){
+  char str_clck[] = "00:00";
+
+  int aux = seconds++;
+
+  str_clck[4] = '0' + (aux%10);  aux /=10;
+  str_clck[3] = '0' + (aux%6) ;  aux /=6;
+  str_clck[1] = '0' + (aux%10);  aux /=10;
+  str_clck[0] = '0' + (aux%6) ;
+
+  lcd_print_at(str_clck, 1,11);
+
+}
+
+
 // definicion de la tabla de punteros a funcion
 // que debe corresponderse con fsm_playback_state_t
 static void (* const state_table[])(void) = {

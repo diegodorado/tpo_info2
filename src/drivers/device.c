@@ -11,12 +11,12 @@
 #include "device.h"
 
 
-void device_setup_clock(void);
-void turn_rgb_led_off(void);
+void setup_clock(void);
+void setup_rgb(void);
 
 void device_setup(void){
-  device_setup_clock();
-  turn_rgb_led_off();
+  setup_clock();
+  setup_rgb();
 }
 
 /********************************************************************************
@@ -30,7 +30,7 @@ void device_setup(void){
  \return void
 */
 
-void device_setup_clock(void){
+void setup_clock(void){
   SCS       = SCS_Value;
 
   if (SCS_Value & (1 << 5))               /* If Main Oscillator is enabled      */
@@ -84,15 +84,16 @@ void device_setup_clock(void){
 }
 
 
-void turn_rgb_led_off(void){
-  gpio_set_dir(2,1,1); // P2.1 : salida
-  gpio_set_dir(2,2,1);//P2.2 : salida
-  gpio_set_dir(2,3,1); //P2.3 : salida
-
-  gpio_set_pin(2,1,0);
-  gpio_set_pin(2,2,0);
-  gpio_set_pin(2,3,0);
-
-
+void setup_rgb(void){
+  gpio_set_dir(DEVICE_RGB_RED_PIN,1); // P2.1 : salida
+  gpio_set_dir(DEVICE_RGB_GREEN_PIN,1);//P2.2 : salida
+  gpio_set_dir(DEVICE_RGB_BLUE_PIN,1); //P2.3 : salida
+  device_rgb_set(DEVICE_RGB_NONE);
 }
 
+void device_rgb_set(device_rgb_color_t color){
+  gpio_set_pin(DEVICE_RGB_RED_PIN,(color==DEVICE_RGB_RED));
+  gpio_set_pin(DEVICE_RGB_GREEN_PIN,(color==DEVICE_RGB_GREEN));
+  gpio_set_pin(DEVICE_RGB_BLUE_PIN,(color==DEVICE_RGB_BLUE));
+
+}
