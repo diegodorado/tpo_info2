@@ -129,12 +129,10 @@ uint32_t storage_sd_last_block()
 
 void storage_format_sd(void)
 {
-  uint32_t last_block = STORAGE_FILE_HEADERS_START_BLOCK
-      + STORAGE_FILE_HEADERS_BLOCKS_COUNT;
-  storage_write_header(0, last_block);
+  storage_write_header(0, STORAGE_FILE_HEADERS_START_BLOCK + STORAGE_FILE_HEADERS_BLOCKS_COUNT);
 }
 
-int storage_write_header(uint8_t files_count, uint32_t last_block)
+void storage_write_header(uint8_t files_count, uint32_t last_block)
 {
   uint8_t buf[FILECHUNK_SIZE];
   uint8_t* buf_ptr = buf;
@@ -155,49 +153,33 @@ int storage_write_header(uint8_t files_count, uint32_t last_block)
   *((uint32_t*) buf_ptr) = STORAGE_DISK_HEADER_TAIL;
 
   if ( !sd_card_write(buf, 1, STORAGE_DISK_HEADER_BLOCK) )
-    return (sd_status = SD_STATUS_WRITE_FAILURE);
-
-  return 0;
+    sd_status = SD_STATUS_WRITE_FAILURE;
 }
 
-int storage_get_file_headers(fileheader_data_t * file_headers,
-    uint8_t files_count)
+void storage_get_file_headers(fileheader_data_t * file_headers)
 {
-
-  if ( !sd_card_read((uint8_t*) file_headers, STORAGE_FILE_HEADERS_BLOCKS_COUNT,
-      STORAGE_FILE_HEADERS_START_BLOCK) )
-    return (sd_status = SD_STATUS_READ_FAILURE);
-
-  return 0; // no errors
-
+  if ( !sd_card_read((uint8_t*) file_headers, STORAGE_FILE_HEADERS_BLOCKS_COUNT, STORAGE_FILE_HEADERS_START_BLOCK) )
+    sd_status = SD_STATUS_READ_FAILURE;
 }
 
-int storage_save_file_header(fileheader_data_t * file_header)
+void storage_save_file_header(fileheader_data_t file_header)
 {
 
   fileheader_data_t file_headers[STORAGE_FILE_HEADERS_MAX_COUNT];
-  uint8_t file_headers_index;
 
-  if ( storage_get_file_headers(file_headers, status.files_count) != 0 )
-    return sd_status;
+  storage_get_file_headers(file_headers);
 
-  file_header->block_start = status.last_block;
-  status.last_block += file_header->chunks_count;
+  //set the new fileheader
+  file_header.block_start = status.last_block;
+  file_headers[status.files_count] = file_header;
+
+  if ( !sd_card_write((uint8_t*) file_headers, STORAGE_FILE_HEADERS_BLOCKS_COUNT, STORAGE_FILE_HEADERS_START_BLOCK) )
+    sd_status = SD_STATUS_WRITE_FAILURE;
+
+  status.last_block += file_header.chunks_count;
   status.files_count++;
 
   // save the new disk header
-  if ( storage_write_header(status.files_count, status.last_block) != 0 )
-    return 3; //error 3
-
-  //set the new fileheader
-  file_headers[status.files_count] = *file_header;
-  file_headers_index = (status.files_count / 16) * 16;
-
-  if ( !sd_card_write((uint8_t*) &file_headers[file_headers_index], 1,
-      STORAGE_FILE_HEADERS_START_BLOCK + file_headers_index) )
-    return 4; // error 4
-
-  return 0; // no errors
+  storage_write_header(status.files_count, status.last_block);
 
 }
-

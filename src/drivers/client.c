@@ -14,25 +14,6 @@
 
 
 
-static volatile uint32_t seconds = 0;
-
-static void update_lcd_timer(void){
-  char str_clck[] = "00:00";
-
-  int aux = seconds++;
-
-  str_clck[4] = '0' + (aux%10);  aux /=10;
-  str_clck[3] = '0' + (aux%6) ;  aux /=6;
-  str_clck[1] = '0' + (aux%10);  aux /=10;
-  str_clck[0] = '0' + (aux%6) ;
-
-  lcd_print_at(str_clck, 1,11);
-
-}
-
-
-
-
 uint8_t client_has_message()
 {
   uint8_t data;
@@ -58,13 +39,13 @@ message_hdr_t* client_get_message()
 
   if(message == NULL){
     free(message);
-    lcd_print_char_at('3',1,8);//debug!
+    //lcd_print_char_at('3',1,8);//debug!
     return NULL;
   }
 
   if(message->msg_type >= MESSAGE_MAX_VALID_TYPE){
     free(message);
-    lcd_print_char_at('4',1,9); //debug!
+    //lcd_print_char_at('4',1,9); //debug!
     return NULL;
   }
 
@@ -75,22 +56,17 @@ message_hdr_t* client_get_message()
 
 
 
-void client_send_status_response(message_hdr_t* request, status_id_t status)
+void client_send_status_response(message_hdr_t* message, status_id_t status)
 {
-  message_hdr_t response;
-
-  response.data_length = 1;
-  response.msg_id = request->msg_id;
-  response.msg_type = request->msg_type;
-  response.is_response = 1;
-  client_send_message_response(&response, (uint8_t*)&status);
-
+  message->data_length = 1;
+  client_send_message_response(message, (uint8_t*)&status);
 }
 
 
 
 void client_send_message_response(message_hdr_t* message, uint8_t* data)
 {
+  message->is_response = 1;
   client_send_message(message, data);
 }
 

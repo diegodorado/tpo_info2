@@ -17,7 +17,7 @@ void setup(void){
   storage_setup(); //inicializar almacenamiento (tarjeta SD)
   client_setup(); // inicializar cliente remoto (UART)
 
-  //audio_setup(); // inicializar AUDIO (DAC/DMA)
+  audio_setup(); // inicializar AUDIO (DAC/DMA)
 
 }
 
