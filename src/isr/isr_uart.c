@@ -67,8 +67,6 @@ void UART1_IRQHandler(void){
   uart_iir_t iir; // iir auxiliar, ya que el registro se borra al leerlo
   uart_lsr_t lsr; // RLS interrupt is cleared upon an LSR read
 
-  uint8_t data;
-
   do
   {
     iir = UART1->IIR;

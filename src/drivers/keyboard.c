@@ -7,13 +7,13 @@
 
 
 #include "keyboard.h"
-#include "fsm.h"
+#include "systick.h"
 
 
 static void keyboard_refresh(void);
 
 void (* keyboard_handler)(uint8_t key);
-void dummy_handler(uint8_t key);
+void dummy_handler(uint8_t key){ /*do nothing*/};
 
 
 
@@ -126,12 +126,4 @@ static void keyboard_refresh(void){
 
 void keyboard_set_handler(void (*handler)( uint8_t key)){
   keyboard_handler = handler;
-  if(handler==fsm_playback_keyboard_handler)
-    lcd_print_char_at('P',0,9);
-  else
-    lcd_print_char_at('S',0,9);
-}
-
-void dummy_handler(uint8_t key){
-  //do nothing
 }

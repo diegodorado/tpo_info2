@@ -55,6 +55,7 @@ static void (* const state_table[])(void) = {
 
 void fsm_playback_init(void){
   systick_delay_async(1000, 1, seconds_left_countdown);
+  timer_set_timer1_mr0_interrupt_handler(fsm_playback_sample_rate_tick);
 }
 
 void fsm_playback_update(void)
@@ -147,9 +148,7 @@ static void playing( void)
 }
 
 static void paused( void){
-  if(status_entered())
-    device_rgb_set(DEVICE_RGB_RED);
-
+  //just wait
 }
 
 
@@ -180,7 +179,7 @@ static void seek(uint8_t index){
   lcd_clear();
   //display name
   for(i=0;i<sizeof(current_file_header.filename);i++)
-    lcd_print_char_at(current_file_header.filename[i],1,i);
+    lcd_print_char_at(current_file_header.filename[i],0,i);
 
   //display sample rate
   lcd_print_at("SR:",1,8);
@@ -190,9 +189,9 @@ static void seek(uint8_t index){
 
 
   //display file #
-  lcd_print_int_at(file_index+1,0,0,3);
-  lcd_print_char_at('/',0,3);
-  lcd_print_int_at(storage_sd_files_count(),0,4,3);
+  lcd_print_int_at(file_index+1,1,0,3);
+  lcd_print_char_at('/',1,3);
+  lcd_print_int_at(storage_sd_files_count(),1,4,3);
 
 
   seconds_left = (current_file_header.chunks_count*512)/current_file_header.sample_rate;
@@ -293,16 +292,13 @@ static void seconds_left_countdown(void){
 }
 
 static void display_seconds_left(void){
-  char str_clck[] = "00:00";
-
   int aux = seconds_left;
 
-  str_clck[4] = '0' + (aux%10);  aux /=10;
-  str_clck[3] = '0' + (aux%6) ;  aux /=6;
-  str_clck[1] = '0' + (aux%10);  aux /=10;
-  str_clck[0] = '0' + (aux%6) ;
-
-  lcd_print_at(str_clck, 0,11);
+  lcd_print_char_at('0' + (aux%10), 0,14);  aux /=10;
+  lcd_print_char_at('0' + (aux%6) , 0,13);  aux /=6;
+  lcd_print_char_at(':'           , 0,12);
+  lcd_print_char_at('0' + (aux%10), 0,11);  aux /=10;
+  lcd_print_char_at('0' + (aux%6) , 0,10);
 
 }
 

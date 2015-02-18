@@ -29,6 +29,9 @@ static void write_4_bits_sync(uint8_t value, uint32_t settleTime);
 static void command_sync(uint8_t value, uint32_t settleTime);
 
 
+
+
+
 void lcd_setup(void)
 {
 
@@ -43,7 +46,7 @@ void lcd_setup(void)
   // Now we pull both RS and R/W low to begin commands
   mode_low();
   pulse_enable_low();
-  timer0_delay_us(100000);  //100ms de startup
+  timer_sleep_us(100000);  //100ms de startup
 
   write_4_bits_sync(0x03 , 4100); // we start in 8bit mode, try to set 4 bit mode and wait min 4.1ms
   write_4_bits_sync(0x03 , 100); // second try
@@ -62,11 +65,11 @@ void lcd_setup(void)
 static void write_4_bits_sync(uint8_t value, uint32_t settleTime){
   write_4_bits(value);
   pulse_enable_low();
-  timer0_delay_us(1);
+  timer_sleep_us(1);
   pulse_enable_high();
-  timer0_delay_us(1); // enable pulse must be >450ns
+  timer_sleep_us(1); // enable pulse must be >450ns
   pulse_enable_low();
-  timer0_delay_us(settleTime);
+  timer_sleep_us(settleTime);
 }
 
 static void command_sync(uint8_t value, uint32_t settleTime) {
@@ -200,32 +203,14 @@ static uint8_t write(uint8_t value) {
 
 static uint8_t write4bits( uint8_t value, uint32_t settleTime)
 {
-
-  static uint32_t since;
-
-  crBegin;
-
   write_4_bits(value);
-
   pulse_enable_low();
-  since =  timer0_us();
-  while ((uint32_t) (timer0_us() - since) < 1 )
-    crReturn(0);
-
+  timer_sleep_us(1);
   pulse_enable_high();
-  since =  timer0_us();
-  while ((uint32_t) (timer0_us() - since) < 1 )
-    crReturn(0);
-
-
+  timer_sleep_us(1);
   pulse_enable_low();
-  since =  timer0_us();
-  while ((uint32_t) (timer0_us() - since) < settleTime )
-    crReturn(0);
-
-  crFinish;
+  timer_sleep_us(settleTime);
   return 1;
-
 }
 
 

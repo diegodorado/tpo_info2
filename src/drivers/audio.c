@@ -7,7 +7,6 @@
 
 #include "audio.h"
 #include "drivers.h"
-#include "fsm.h"
 
 void audio_setup(void)
 {
@@ -20,9 +19,4 @@ void audio_setup(void)
 void audio_set_sample_rate(uint32_t srate)
 {
   timer1_set_sample_rate(srate);
-}
-
-void audio_play_sample()
-{
-  fsm_playback_sample_rate_tick();
 }

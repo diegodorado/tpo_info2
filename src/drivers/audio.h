@@ -17,9 +17,5 @@
 
 void audio_setup(void);
 void audio_set_sample_rate(uint32_t srate);
-void audio_play();
-void audio_stop();
-void audio_try_load_sample_block(void);
-void audio_play_sample();
 
 #endif /* AUDIO_H_ */
