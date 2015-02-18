@@ -6,7 +6,7 @@
  */
 
 
-#include "fsm_client.h"
+#include "fsm.h"
 
 
 static volatile  fsm_client_state_t state = FSM_CLIENT_STATE_IDLE; // estado inicial
@@ -25,7 +25,6 @@ static volatile int prev_tick_state = -1; // used to check first entry to state
 
 //utils
 static volatile uint8_t timeout_counter = 0;
-static volatile uint8_t timeout_started = 0;
 static volatile uint8_t timeout_feedback = 0;
 static void check_timeout( void);
 static void timeout_countdown( void);
@@ -55,6 +54,9 @@ static void (* const state_table[])(void) = {
   timeout,
 };
 
+void fsm_client_init(void){
+  systick_delay_async(1000, 1, timeout_countdown);
+}
 
 fsm_client_state_t fsm_client_state()
 {
@@ -66,6 +68,11 @@ void fsm_client_update(void)
   // una llamada a fsm_client_change puede cambiar el estado
   // por eso se almacena el valor antes
   fsm_client_state_t prev_st = state;
+
+  // go idle if storage isnt ok
+  if ( fsm_storage_state() != FSM_STORAGE_STATE_OK)
+    fsm_client_change(FSM_CLIENT_STATE_IDLE);
+
 
   check_timeout();
   // implementada con punteros a funcion
@@ -284,23 +291,11 @@ static void process_status( message_hdr_t* message)
 
 static void process_command( message_hdr_t* message)
 {
-  fileheader_data_t f;
 
-  f.filename[0] = 'A';
-  f.filename[1] = 'B';
-  f.filename[2] = 'C';
-  f.filename[3] = 'D';
-  f.filename[4] = 'e';
-  f.filename[5] = 'f';
-  f.filename[6] = 'g';
-  f.filename[7] = 'h';
-  f.chunks_count = 40;
-
-  storage_save_file_header(f);
-  lcd_print_at("CMD RX:",1,0);
-  lcd_print_char( '0' + *messageData(message) );
+  command_type_t cmd;
+  cmd = (command_type_t) *messageData(message);
+  fsm_playback_command_handler(cmd);
   client_send_status_response(message, STATUS_OK);
-  fsm_client_change(FSM_CLIENT_STATE_IDLE);
 
 }
 
@@ -315,8 +310,8 @@ static void process_fileheader( message_hdr_t* message){
   for(i=0;i<sizeof(file_header.filename);i++)
     lcd_print_char(file_header.filename[i]);
 
-  lcd_print_at("SR:",1,0);
-  lcd_print_int_at(file_header.sample_rate,5,1,15);
+  lcd_print_at("SR:",1,8);
+  lcd_print_int_at(file_header.sample_rate,1,11,5);
 
   if(file_header.length<1024*1024*100) //less than 100mb
   {
@@ -340,32 +335,23 @@ static void process_filechunk( message_hdr_t* message)
 
 
   buffer = messageData(message) + sizeof(chunk.chunk_id);
-  if ( sd_card_write(buffer, 1, file_header.block_start + chunk.chunk_id) )
+  if ( sd_card_write(buffer, 1, storage_sd_last_block() + chunk.chunk_id) )
   {
     if(chunk.chunk_id == file_header.chunks_count - 1)
       fsm_client_change(FSM_CLIENT_STATE_SAVING_HEADERS);
     else
     {
-      //lcd_print_int_at((file_header.chunks_count-chunk.chunk_id),5,1,15);
-      //lcd_print_int_at((chunk.chunk_id*100),5,1,15);
-
-      //lcd_print_int_at(chunk.chunk_id,5,0,15);
-      lcd_print_int_at((file_header.chunks_count-1),5,0,15);
-      lcd_print_at("        ",0,0);
-      lcd_print_int_at(chunk.chunk_id,4,0,7);
-      lcd_print_int_at((chunk.chunk_id*100)/(file_header.chunks_count-1),4,1,3);
+      lcd_print_int_at(chunk.chunk_id,0,11,5);
       lcd_print_char_at('%',1,0);
+      lcd_print_int_at((chunk.chunk_id*100)/(file_header.chunks_count-1),1,1,3);
     }
-
-    client_send_message_response(message, (uint8_t*)  &chunk);
-
   }
   else
   {
     chunk.status = 1;
-    client_send_message_response(message, (uint8_t*)  &chunk);
   }
 
+  client_send_message_response(message, (uint8_t*)  &chunk);
 
 
 
@@ -381,15 +367,8 @@ static void saving_headers_callback( void){
 // timout handling
 
 static void check_timeout( void){
-  //start countdown only once
-  if(!timeout_started){
-    systick_delay_async(1000, 1, timeout_countdown);
-    timeout_started = 1;
-  }
-
   if(state!=FSM_CLIENT_STATE_IDLE && timeout_counter<=0)
     fsm_client_change(FSM_CLIENT_STATE_TIMEOUT);
-
 }
 
 static void timeout_countdown( void){

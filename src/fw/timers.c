@@ -68,9 +68,9 @@ void timer1_setup(void)
   TIMER1->TCR_ENABLED = 0;    // Apago el temporizador
   TIMER1->TCR_RESET = 1;      // Reseteo el temporizador
 
-  TIMER1->PR = 0;//25;      // 25MHz / 25 = 1MHz
+  TIMER1->PR = 0;         // 25MHz / 25 = 1MHz
   TIMER1->PC = 0;
-  TIMER1->MR0 = 3125-1; //1134-1;//3124;      // match0
+  TIMER1->MR0 = 3125-1;   // match0
   TIMER1->TC = 0;
 
   TIMER1->MCR = 0x00;     // Aseguro la condición de arranque
@@ -80,10 +80,26 @@ void timer1_setup(void)
 
   ISER0 |= (0x00000001)<<  2;  // Habilito interrupcion del Timer1
 
+
+}
+
+
+
+
+void timer1_set_sample_rate(uint32_t srate)
+{
+
+  TIMER1->TCR_ENABLED = 0;    // Apago el temporizador
+  TIMER1->TCR_RESET = 1;      // Reseteo el temporizador
+
+  TIMER1->MR0 = (25000000/srate)-1; // la cuenta es aproximada...
+  TIMER1->TC = 0;
+
   TIMER1->TCR_RESET = 0;      // Apago el bit de RESET
   TIMER1->TCR_ENABLED = 1;    // Enciendo el temporizador
 
 }
+
 
 void  timer1_mr0_interrupt()
 {

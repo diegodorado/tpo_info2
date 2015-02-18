@@ -20,6 +20,7 @@ typedef enum {
   FSM_STORAGE_STATE_ERROR,
 } fsm_storage_state_t;
 
+void fsm_storage_init(void);
 void fsm_storage_update(void);
 void fsm_storage_change(fsm_storage_state_t st);
 fsm_storage_state_t fsm_storage_state();

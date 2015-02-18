@@ -11,7 +11,7 @@
 //include drivers
 #include "drivers.h"
 
-#define FSM_CLIENT_TIMEOUT 15 //seconds
+#define FSM_CLIENT_TIMEOUT 5 //seconds
 
 
 typedef enum {
@@ -22,6 +22,7 @@ typedef enum {
   FSM_CLIENT_STATE_TIMEOUT,
 } fsm_client_state_t;
 
+void fsm_client_init(void);
 void fsm_client_update(void);
 void fsm_client_change(fsm_client_state_t);
 fsm_client_state_t fsm_client_state();

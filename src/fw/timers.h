@@ -18,7 +18,7 @@ void  timer0_delay_us(uint32_t us);
 
 
 void timer1_setup(void);
-void  timer1_mr0_interrupt(void);
-
+void timer1_mr0_interrupt(void);
+void timer1_set_sample_rate(uint32_t srate);
 
 #endif /* TIMERS_H_ */

@@ -6,7 +6,7 @@
  */
 
 
-#include "fsm_storage.h"
+#include "fsm.h"
 
 static void check_card_detected( void);
 static uint8_t status_entered(void);
@@ -36,6 +36,10 @@ static void (* const state_table[])(void) = {
   formating,
   error,
 };
+
+void fsm_storage_init(void){
+
+}
 
 void fsm_storage_update(void)
 {
@@ -132,7 +136,10 @@ static void booting( void){
 
 
 static void ok( void){
-  //do nothing
+
+  if(storage_sd_status()!=SD_STATUS_OK)
+    fsm_storage_change(FSM_STORAGE_STATE_ERROR);
+
   if(status_entered()){
     device_rgb_set(DEVICE_RGB_GREEN);
     systick_delay_async(1000, 0,turn_rgb_off);
@@ -154,6 +161,7 @@ static void not_detected( void){
 static void wrong_format( void) {
   // print only once
   if(status_entered()){
+    keyboard_set_handler(fsm_storage_keyboard_handler);
     device_rgb_set(DEVICE_RGB_RED);
     lcd_clear();
     lcd_print_at("SD WRONG FORMAT", 0, 0);
@@ -214,6 +222,7 @@ static void error( void){
         lcd_print_at("SD INVALID SIZE", 0, 0);
         break;
       default:
+        lcd_print_at("SD UNKOWN ERROR", 0, 0);
         break;
     }
   }

@@ -277,15 +277,21 @@ void lcd_clear()
   has_to_clear = 1;
 }
 
-
-void lcd_print_int_at(  uint32_t value, uint8_t size,uint8_t row,uint8_t col)
+void lcd_print_int_at(  uint32_t value,uint8_t row,uint8_t col, uint8_t width)
 {
-  for(;size-->0;value/=10)
-    lcd_print_char_at('0' + (value%10),row, col--);
+  char str[] = "00000000";
+  int i;
+
+  for(i = 7;i>=0;i--){
+    str[i] = '0' + (value%10);
+    value /=10;
+  }
+
+  lcd_print_at(&str[8-width], row,col);
 
   // int was too big? ***mark it***
   if(value>10)
-    lcd_print_char('*');
+    lcd_print_char_at('*', row,col);
 
 }
 
